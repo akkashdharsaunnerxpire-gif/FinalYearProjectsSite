@@ -1,5 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import Aichatbot from "../assets/project_image/chatbot.png";
+import AIcarrerguidance from "../assets/project_image/Ai-carrer-guidance.png";
+import FakeNewsdetection from "../assets/project_image/fake news detection.png";
+import seatAllocation from "../assets/project_image/Seat-Allocation.png";
 import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight, } from 'lucide-react';
 
 // ---------- Types & Data (unchanged) ----------
@@ -75,7 +79,7 @@ export const projects: Project[] = [
     price: 4000,
     discount: 15,
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
-    image_url: "https://images.unsplash.com/photo-1581091870627-3a5f4f4b1a06?w=800",
+    image_url: Aichatbot,
     created_at: "2025-03-20",
     updated_at: "2025-03-20",
   },
@@ -90,7 +94,7 @@ export const projects: Project[] = [
     price: 3500,
     discount: 20,
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
-    image_url: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800",
+    image_url: FakeNewsdetection,
     created_at: "2025-03-18",
     updated_at: "2025-03-18",
   },
@@ -105,8 +109,8 @@ export const projects: Project[] = [
     price: 3500,
     discount: 10,
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
-    image_url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800",
-    created_at: "2025-03-22",
+    image_url: AIcarrerguidance,
+    created_at: "2025-03-15",
     updated_at: "2025-03-22",
   },
   {
@@ -120,7 +124,7 @@ export const projects: Project[] = [
     price: 1799,
     discount: 25,
     download_links: { ppt: "#", report: "#", source_code: "#" },
-    image_url: null,
+    image_url: seatAllocation,
     created_at: "2025-01-15",
     updated_at: "2025-02-05",
   },
@@ -362,12 +366,12 @@ export default function ProjectsPage() {
                     className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-row h-auto"
                   >
                     {/* Image Section (Left) */}
-                    <div className="relative w-1/3 aspect-square overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+                    <div className="relative w-[300px] h-[200px] overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 flex-shrink-0">
                       {project.image_url ? (
                         <img
                           src={project.image_url}
                           alt={project.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                          className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105 duration-300"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
