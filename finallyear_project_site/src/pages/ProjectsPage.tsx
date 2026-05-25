@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight, Code, Sparkles } from 'lucide-react';
+import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight, } from 'lucide-react';
 
 // ---------- Types & Data (unchanged) ----------
 export interface Category {
