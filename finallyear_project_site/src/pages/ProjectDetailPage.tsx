@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { projects } from '../lib/types';
+import { projects } from './ProjectsPage';
 import {
   FileText,
   ArrowLeft,
   FileCode,
   IndianRupee,
   CheckCircle,
+  AlertCircle,
+  MessageCircle,   // ← WhatsApp Icon
 } from 'lucide-react';
 import PaymentSection from '../Components/PaymentSection';
 
@@ -24,79 +26,112 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Project not found</h2>
-          <Link to="/projects" className="text-blue-600 hover:text-blue-700 font-medium">
-            Back to Projects
-          </Link>
+          <h2 className="text-3xl font-bold mb-4">Project Not Found</h2>
+          <Link to="/projects" className="text-blue-600 hover:underline">← Back to Projects</Link>
         </div>
       </div>
     );
   }
 
-  // Calculate discounted price if discount exists
   const discountedPrice = project.discount
     ? Math.round(project.price * (1 - project.discount / 100))
     : project.price;
 
+  const isAvailable = project.status === 'available';
+
+  // WhatsApp Message
+  const whatsappMessage = encodeURIComponent(
+    `Hi, I want the "${project.title}" final year project. Please send me more details.`
+  )
+  const whatsappNumber = "918015874936"; // ← CHANGE THIS TO YOUR NUMBER
+
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Back Button */}
         <Link
           to="/projects"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-8 group"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8 font-medium"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="w-5 h-5" />
           Back to Projects
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            {project.title}
-          </h1>
-          <p className="text-xl text-gray-600 leading-relaxed">
-            {project.short_description}
-          </p>
+        {/* Project Image */}
+        <div className="mb-8 rounded-3xl overflow-hidden shadow-xl">
+          {project.image_url ? (
+            <img
+              src={project.image_url}
+              alt={project.title}
+              className="w-full h-auto max-h-[420px] object-cover"
+            />
+          ) : (
+            <div className="bg-gray-200 h-80 flex items-center justify-center">
+              <span className="text-gray-400 text-xl">No Image Available</span>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-8">
-          {/* Overview */}
-          <section className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+        {/* Title + Status */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+              {project.title}
+            </h1>
+            <p className="text-xl text-gray-600 mt-3">
+              {project.short_description}
+            </p>
+          </div>
+          <div className={`px-5 py-3 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 self-start ${
+            isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}>
+            {isAvailable ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            {isAvailable ? 'Available Now' : 'Unavailable'}
+          </div>
+        </div>
+
+        <div className="space-y-10">
+          {/* Project Description */}
+          <section className="bg-white rounded-3xl shadow p-8 md:p-10">
+            <h2 className="text-2xl font-bold mb-5 flex items-center gap-3">
               <FileText className="w-6 h-6 text-blue-600" />
-              Overview
+              Project Description
             </h2>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-              {project.full_description}
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[17px]">
+              {project.full_description || "No description available for this project."}
             </p>
           </section>
 
-          {/* Key Features (reduced to 3 most important) */}
-          <section className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          {/* Key Features */}
+          <section className="bg-white rounded-3xl shadow p-8 md:p-10">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
               <CheckCircle className="w-6 h-6 text-blue-600" />
               Key Features
             </h2>
-            <ul className="space-y-3">
-              {project.features.slice(0, 3).map((feature, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <ul className="space-y-4">
+              {project.features.map((feature, i) => (
+                <li key={i} className="flex gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" />
                   <span className="text-gray-700">{feature}</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          {/* Tech Stack (condensed) */}
-          <section className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          {/* Tech Stack */}
+          <section className="bg-white rounded-3xl shadow p-8 md:p-10">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
               <FileCode className="w-6 h-6 text-blue-600" />
               Tech Stack
             </h2>
-            <div className="flex flex-wrap gap-2">
-              {project.tech_stack.slice(0, 5).map((tech, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full border border-blue-200"
+            <div className="flex flex-wrap gap-3">
+              {project.tech_stack.map((tech, i) => (
+                <span 
+                  key={i} 
+                  className="px-4 py-2 bg-blue-50 text-blue-700 rounded-2xl text-sm font-medium"
                 >
                   {tech}
                 </span>
@@ -104,45 +139,58 @@ export default function ProjectDetailPage() {
             </div>
           </section>
 
-          {/* Purchase Card with Discount */}
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Pricing & Buy Button */}
+          <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-3xl p-8 md:p-10 text-white">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <p className="text-blue-100 text-sm">Complete Project Package</p>
+                <p className="text-blue-100">Complete Project Package</p>
                 {project.discount ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-200 line-through text-sm flex items-center">
-                      <IndianRupee className="w-3 h-3" />{project.price}
-                    </span>
-                    <span className="text-3xl font-bold flex items-center gap-1">
-                      <IndianRupee className="w-6 h-6" />
-                      {discountedPrice}
-                    </span>
-                    <span className="text-xs bg-green-500 px-2 py-0.5 rounded-full">
-                      -{project.discount}%
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="line-through text-blue-200">₹{project.price}</span>
+                    <span className="text-4xl font-bold">₹{discountedPrice}</span>
+                    <span className="bg-green-500 px-3 py-1 rounded-xl text-sm font-semibold">
+                      {project.discount}% OFF
                     </span>
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold flex items-center gap-1">
-                    <IndianRupee className="w-6 h-6" />
-                    {project.price}
-                  </p>
+                  <span className="text-4xl font-bold">₹{project.price}</span>
                 )}
               </div>
-              <a
-                href="#payment"
-                className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all hover:shadow-xl"
-              >
-                Purchase Now
-              </a>
+
+              {isAvailable ? (
+                <a
+                  href="#payment"
+                  className="bg-white text-blue-600 px-10 py-4 rounded-2xl font-semibold text-lg hover:bg-blue-50 transition"
+                >
+                  Buy Now
+                </a>
+              ) : (
+                <div className="bg-white/20 px-8 py-5 rounded-2xl text-center">
+                  <p className="font-semibold">This project is currently unavailable</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div id="payment" className="mt-12">
-          <PaymentSection price={discountedPrice} />
-        </div>
+        {/* Payment Section */}
+        {isAvailable && (
+          <div id="payment" className="mt-16">
+            <PaymentSection price={discountedPrice} />
+          </div>
+        )}
       </div>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href={whatsappLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl flex items-center gap-3 transition-all hover:scale-110 z-50"
+      >
+        <MessageCircle className="w-7 h-7" />
+        <span className="font-medium pr-2">Chat on WhatsApp</span>
+      </a>
     </div>
   );
 }

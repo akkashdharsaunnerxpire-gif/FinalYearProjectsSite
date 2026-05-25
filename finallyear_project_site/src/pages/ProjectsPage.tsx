@@ -4,9 +4,9 @@ import Aichatbot from "../assets/project_image/chatbot.png";
 import AIcarrerguidance from "../assets/project_image/Ai-carrer-guidance.png";
 import FakeNewsdetection from "../assets/project_image/fake news detection.png";
 import seatAllocation from "../assets/project_image/Seat-Allocation.png";
-import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight, } from 'lucide-react';
+import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
-// ---------- Types & Data (unchanged) ----------
+// ---------- Types & Data ----------
 export interface Category {
   id: string;
   name: string;
@@ -25,6 +25,7 @@ export interface Project {
   features: string[];
   price: number;
   discount?: number;
+  status: 'available' | 'unavailable';   // ← NEW
   download_links: {
     ppt?: string;
     report?: string;
@@ -37,34 +38,10 @@ export interface Project {
 }
 
 export const categories: Category[] = [
-  {
-    id: "ai-ml",
-    name: "AI & Machine Learning",
-    description: "Intelligent systems, computer vision, NLP and deep learning projects",
-    icon: "Brain",
-    created_at: "2025-01-10",
-  },
-  {
-    id: "web-dev",
-    name: "Web Development",
-    description: "Modern full-stack web applications and websites",
-    icon: "Code",
-    created_at: "2025-01-10",
-  },
-  {
-    id: "iot-embedded",
-    name: "IoT & Embedded",
-    description: "Hardware + software integrated smart systems",
-    icon: "Cpu",
-    created_at: "2025-02-15",
-  },
-  {
-    id: "android",
-    name: "Mobile Apps",
-    description: "Android & cross-platform mobile applications",
-    icon: "Smartphone",
-    created_at: "2025-03-01",
-  },
+  { id: "ai-ml", name: "AI & Machine Learning", description: "Intelligent systems...", icon: "Brain", created_at: "2025-01-10" },
+  { id: "web-dev", name: "Web Development", description: "Modern full-stack...", icon: "Code", created_at: "2025-01-10" },
+  { id: "iot-embedded", name: "IoT & Embedded", description: "Hardware + software...", icon: "Cpu", created_at: "2025-02-15" },
+  { id: "android", name: "Mobile Apps", description: "Android & cross-platform...", icon: "Smartphone", created_at: "2025-03-01" },
 ];
 
 export const projects: Project[] = [
@@ -72,12 +49,13 @@ export const projects: Project[] = [
     id: "p1",
     title: "AI Government Scheme Chatbot",
     short_description: "Smart chatbot to help users find government schemes based on eligibility",
-    full_description: `...`,
+    full_description: `This AI-powered chatbot is designed to help citizens easily discover and apply for various government schemes and welfare programs. Users can interact naturally through chat in English or Tamil. The system analyzes user details like age, income, location, and category to recommend the most suitable schemes. It includes eligibility checker, application guidance, document requirements, and multi-language support. Built using advanced NLP and integrated with real government data for accurate and fast responses.`,
     category_id: "ai-ml",
     tech_stack: ["Python", "NLP", "Flask", "React", "MongoDB", "Tailwind"],
     features: ["AI-based scheme recommendation", "Chat interface", "User eligibility filtering", "Multi-language support", "Fast response system"],
     price: 4000,
-    discount: 15,
+    discount: 20,
+    status: "available",
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
     image_url: Aichatbot,
     created_at: "2025-03-20",
@@ -87,12 +65,13 @@ export const projects: Project[] = [
     id: "p2",
     title: "Fake News Detection System",
     short_description: "Machine learning model to detect fake news articles with high accuracy",
-    full_description: `...`,
+    full_description: `An advanced Machine Learning system that detects fake news articles with high accuracy. The model is trained on large datasets containing both real and fake news from various sources. Users can input news text or URL, and the system instantly classifies it as Real or Fake with a confidence percentage. It also highlights suspicious words and provides detailed analysis. This project helps combat misinformation and is useful for media houses, fact-checkers, and general public.`,
     category_id: "ai-ml",
     tech_stack: ["Python", "Scikit-learn", "NLP", "Flask", "React"],
     features: ["Fake vs Real classification", "High accuracy prediction", "User input news checking", "Web interface", "Fast API response"],
-    price: 3500,
-    discount: 20,
+    price: 9000,
+    discount: 80,
+    status: "available",
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
     image_url: FakeNewsdetection,
     created_at: "2025-03-18",
@@ -102,12 +81,13 @@ export const projects: Project[] = [
     id: "p3",
     title: "AI Career Guidance System",
     short_description: "AI-based system to suggest career paths based on student skills and interests",
-    full_description: `...`,
+    full_description: `This intelligent AI Career Guidance System helps students and fresh graduates choose the right career path. It analyzes academic performance, skills, interests, personality traits, and market trends to provide personalized career recommendations. The system suggests suitable courses, colleges, job roles, and skill development roadmaps. It includes a beautiful student dashboard, progress tracking, and counselor admin panel. Perfect for final year students looking for career clarity.`,
     category_id: "ai-ml",
     tech_stack: ["Python", "Machine Learning", "Flask", "React", "MySQL"],
     features: ["Career prediction system", "Student dashboard", "Skill analysis", "Personalized suggestions", "Course recommendations"],
-    price: 3500,
-    discount: 10,
+    price: 6000,
+    discount: 40,
+    status: "unavailable",
     download_links: { ppt: "#", report: "#", source_code: "#", paper: "#" },
     image_url: AIcarrerguidance,
     created_at: "2025-03-15",
@@ -117,12 +97,13 @@ export const projects: Project[] = [
     id: "p4",
     title: "Online College Seat Allocation & Booking Portal",
     short_description: "Centralized platform for students to check and reserve college seats",
-    full_description: `...`,
+    full_description: `A complete web-based platform for centralized college seat allocation and booking. Students can browse available courses, check real-time seat availability, apply for admissions, and make secure payments through Razorpay. The system features student login, admin dashboard for seat management, notification system, and responsive design. It eliminates manual processes and provides a smooth digital experience for both students and college administration.`,
     category_id: "web-dev",
-    tech_stack: ["React", "Node.js", "Express", "MongoDB", "Razorpay", "Tailwind", "Socket.io"],
+    tech_stack: ["React", "Node.js", "Express", "MongoDB", "Razorpay", "Tailwind"],
     features: ["Real-time seat updates", "Secure payment integration", "Admin dashboard", "Student login", "Responsive design"],
     price: 1799,
     discount: 25,
+    status: "available",
     download_links: { ppt: "#", report: "#", source_code: "#" },
     image_url: seatAllocation,
     created_at: "2025-01-15",
@@ -150,26 +131,17 @@ export default function ProjectsPage() {
     setSearchParams(searchParams, { replace: true });
   }, [selectedCategory, searchParams, setSearchParams]);
 
-  const filteredProjects =
-    selectedCategory === 'all'
-      ? projects
-      : projects.filter((p) => p.category_id === selectedCategory);
+  const filteredProjects = selectedCategory === 'all'
+    ? projects
+    : projects.filter((p) => p.category_id === selectedCategory);
 
   const getDiscountedPrice = (price: number, discount?: number) => {
-    if (!discount) return null;
+    if (!discount) return price;
     return Math.round(price * (1 - discount / 100));
   };
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -260, behavior: 'smooth' });
-    }
-  };
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 260, behavior: 'smooth' });
-    }
-  };
+  const scrollLeft = () => scrollContainerRef.current?.scrollBy({ left: -260, behavior: 'smooth' });
+  const scrollRight = () => scrollContainerRef.current?.scrollBy({ left: 260, behavior: 'smooth' });
 
   const checkScroll = () => {
     const el = scrollContainerRef.current;
@@ -188,14 +160,23 @@ export default function ProjectsPage() {
     }
   }, [filteredProjects]);
 
+  // Status Badge Component
+  const StatusBadge = ({ status }: { status: 'available' | 'unavailable' }) => (
+    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm ${
+      status === 'available' 
+        ? 'bg-green-500 text-white' 
+        : 'bg-red-500 text-white'
+    }`}>
+      {status === 'available' ? '✓ Available' : '✕ Unavailable'}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">
-            Our Projects
-          </h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">Our Projects</h1>
           <p className="text-base md:text-xl text-blue-100 max-w-2xl mx-auto">
             Browse through our collection of high-quality final year projects
           </p>
@@ -206,24 +187,18 @@ export default function ProjectsPage() {
         {/* Category Filter */}
         <div className="mb-8 md:mb-12">
           <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-3">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-sm md:text-base font-medium transition-all ${
-                selectedCategory === 'all'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
+            <button onClick={() => setSelectedCategory('all')}
+              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
+                selectedCategory === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-100 border'
+              }`}>
               All Projects
             </button>
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-sm md:text-base font-medium transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
+                  selectedCategory === cat.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-100 border'
                 }`}
               >
                 {cat.name}
@@ -232,211 +207,116 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {/* Projects Display */}
         {filteredProjects.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-              <Tag className="w-10 h-10 text-gray-400" />
-            </div>
+            <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">No projects found in this category.</p>
           </div>
         ) : (
           <>
-            {/* 📱 Mobile Horizontal Scroll with Arrows */}
+            {/* Mobile Horizontal Scroll */}
             <div className="relative sm:hidden">
               {showLeftArrow && (
-                <button
-                  onClick={scrollLeft}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur rounded-full p-1.5 shadow-md hover:bg-white transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4 text-gray-700" />
+                <button onClick={scrollLeft} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md">
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
               )}
               {showRightArrow && (
-                <button
-                  onClick={scrollRight}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 backdrop-blur rounded-full p-1.5 shadow-md hover:bg-white transition-all"
-                >
-                  <ChevronRight className="w-4 h-4 text-gray-700" />
+                <button onClick={scrollRight} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md">
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               )}
 
-              <div
-                ref={scrollContainerRef}
-                className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
-                style={{ scrollbarWidth: 'none' }}
-              >
+              <div ref={scrollContainerRef} className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
                 {filteredProjects.map((project) => {
                   const discountedPrice = getDiscountedPrice(project.price, project.discount);
                   return (
-                    <Link
-                      key={project.id}
-                      to={`/project/${project.id}`}
-                      className="min-w-[260px] max-w-[260px] snap-start bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col"
-                    >
-                      {/* Image Section */}
-                      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
-                        {project.image_url ? (
-                          <img
-                            src={project.image_url}
-                            alt={project.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Tag className="w-10 h-10 text-blue-300" />
-                          </div>
-                        )}
+                    <Link key={project.id} to={`/project/${project.id}`}
+                      className="min-w-[260px] bg-white rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden flex flex-col snap-start">
+                      <div className="relative aspect-video bg-gradient-to-br from-blue-50 to-purple-50">
+                        {project.image_url && <img src={project.image_url} alt={project.title} className="w-full h-full object-cover" />}
+                        <StatusBadge status={project.status} />
                         {project.discount && (
-                          <div className="absolute top-2 right-2 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
                             {project.discount}% OFF
                           </div>
                         )}
                       </div>
 
-                      {/* Content Section */}
-                      <div className="p-2.5 flex flex-col flex-grow">
-                        <h3 className="text-sm font-semibold mb-1 line-clamp-2">
-                          {project.title}
-                        </h3>
-                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                          {project.short_description}
-                        </p>
+                      <div className="p-3 flex flex-col flex-1">
+                        <h3 className="font-semibold text-sm mb-1 line-clamp-2">{project.title}</h3>
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">{project.short_description}</p>
 
-                        {/* Additional details: tech stack or features */}
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {project.tech_stack.slice(0, 2).map((tech, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                          {project.features.slice(0, 1).map((feature, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-full"
-                            >
-                              {feature}
-                            </span>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {project.tech_stack.slice(0, 2).map((tech, i) => (
+                            <span key={i} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{tech}</span>
                           ))}
                         </div>
 
-                        {/* Price with discount */}
                         <div className="mt-auto flex justify-between items-center">
                           <div>
                             {project.discount ? (
                               <>
-                                <span className="text-xs line-through text-gray-400 mr-1">
-                                  ₹{project.price}
-                                </span>
-                                <span className="font-bold text-sm flex items-center">
-                                  <IndianRupee className="w-3 h-3 mr-0.5" />
-                                  {discountedPrice}
-                                </span>
+                                <span className="text-xs line-through text-gray-400">₹{project.price}</span>
+                                <span className="font-bold text-lg ml-1">₹{discountedPrice}</span>
                               </>
                             ) : (
-                              <span className="font-bold text-sm flex items-center">
-                                <IndianRupee className="w-3 h-3 mr-0.5" />
-                                {project.price}
-                              </span>
+                              <span className="font-bold text-lg">₹{project.price}</span>
                             )}
                           </div>
-                          <button className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
-                            View
-                          </button>
+                          <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition">View</button>
                         </div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
             </div>
 
-            {/* 💻 Desktop: 2‑Column Grid with Horizontal Cards */}
-            <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Desktop Grid */}
+            <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredProjects.map((project) => {
                 const discountedPrice = getDiscountedPrice(project.price, project.discount);
                 return (
-                  <Link
-                    key={project.id}
-                    to={`/project/${project.id}`}
-                    className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-row h-auto"
-                  >
-                    {/* Image Section (Left) */}
-                    <div className="relative w-[300px] h-[200px] overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 flex-shrink-0">
-                      {project.image_url ? (
-                        <img
-                          src={project.image_url}
-                          alt={project.title}
-                          className="w-full h-full object-contain p-2 transition-transform group-hover:scale-105 duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Tag className="w-8 h-8 text-blue-300" />
-                        </div>
+                  <Link key={project.id} to={`/project/${project.id}`}
+                    className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden flex">
+                    <div className="relative w-[300px] h-[210px] flex-shrink-0 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+                      {project.image_url && (
+                        <img src={project.image_url} alt={project.title} className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300" />
                       )}
+                      <StatusBadge status={project.status} />
                       {project.discount && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                        <div className="absolute top-3 right-3 bg-red-500 text-white px-2.5 py-1 rounded-full text-xs font-bold">
                           {project.discount}% OFF
                         </div>
                       )}
                     </div>
 
-                    {/* Content Section (Right) */}
-                    <div className="flex-1 p-3 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-base font-semibold mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                          {project.title}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                          {project.short_description}
-                        </p>
+                    <div className="flex-1 p-5 flex flex-col">
+                      <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{project.short_description}</p>
 
-                        {/* Additional details: tech stack and features preview */}
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {project.tech_stack.slice(0, 2).map((tech, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                          {project.features.slice(0, 1).map((feature, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full"
-                            >
-                              {feature}
-                            </span>
-                          ))}
-                        </div>
+                      <div className="flex flex-wrap gap-2 mb-auto">
+                        {project.tech_stack.slice(0, 3).map((tech, i) => (
+                          <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full">{tech}</span>
+                        ))}
                       </div>
 
-                      <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-center mt-4">
                         <div>
                           {project.discount ? (
-                            <>
-                              <span className="text-xs line-through text-gray-400 mr-1">
-                                ₹{project.price}
-                              </span>
-                              <span className="font-bold text-base flex items-center">
-                                <IndianRupee className="w-4 h-4 mr-0.5" />
-                                {discountedPrice}
-                              </span>
-                            </>
+                            <div>
+                              <span className="text-sm line-through text-gray-400">₹{project.price}</span>
+                              <span className="font-bold text-xl ml-2">₹{discountedPrice}</span>
+                            </div>
                           ) : (
-                            <span className="font-bold text-base flex items-center">
-                              <IndianRupee className="w-4 h-4 mr-0.5" />
-                              {project.price}
-                            </span>
+                            <span className="font-bold text-xl">₹{project.price}</span>
                           )}
                         </div>
-                        <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
-                          View <ArrowRight className="w-3 h-3" />
+                        <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+                          View Details <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
