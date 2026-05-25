@@ -4,7 +4,7 @@ import Aichatbot from "../assets/project_image/chatbot.png";
 import AIcarrerguidance from "../assets/project_image/Ai-carrer-guidance.png";
 import FakeNewsdetection from "../assets/project_image/fake news detection.png";
 import seatAllocation from "../assets/project_image/Seat-Allocation.png";
-import { IndianRupee, Tag, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import {Tag, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 // ---------- Types & Data ----------
 export interface Category {
