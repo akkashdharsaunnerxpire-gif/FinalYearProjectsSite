@@ -5,7 +5,6 @@ import {
   FileText,
   ArrowLeft,
   FileCode,
-  IndianRupee,
   CheckCircle,
   AlertCircle,
   MessageCircle,   // ← WhatsApp Icon
