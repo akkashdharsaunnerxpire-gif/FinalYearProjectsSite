@@ -1,17 +1,15 @@
 import { QrCode, Mail, MessageCircle, IndianRupee, ArrowRight } from 'lucide-react';
-import gpay from '../assets/payment_image/gpay.jpeg';
-
+import { QRCodeCanvas } from "qrcode.react";
 interface PaymentSectionProps {
-  price: number;
-  gpay?: string; // optional custom QR code image URL
+  price: number;// optional custom QR code image URL
 }
 
-export default function PaymentSection({ price, gpay: customQrUrl }: PaymentSectionProps) {
+export default function PaymentSection({ price }: PaymentSectionProps) {
+  const upiLink = `upi://pay?pa=akkashdharsaun02-2@okicici&pn=AkkashDharsaun&am=${price}&cu=INR`;
   const whatsappNumber = '+91 8015874936';
   const email = 'akkashdharsaun02@gmail.com';
 
   // Determine which image to display: custom URL > imported default > icon
-  const qrImageUrl = customQrUrl || gpay;
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 sm:p-6 md:p-8 border-2 border-blue-200 relative overflow-hidden">
@@ -37,15 +35,11 @@ export default function PaymentSection({ price, gpay: customQrUrl }: PaymentSect
 
             <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mb-4 flex items-center justify-center">
   <div className="text-center">
-    {qrImageUrl ? (
-      <img
-        src={qrImageUrl}
-        alt="QR Code for payment"
-        className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 max-w-full object-contain mx-auto mb-2"
-      />
-    ) : (
-      <QrCode className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 text-gray-400 mx-auto mb-2" />
-    )}
+  <QRCodeCanvas
+  value={upiLink}
+  size={260}
+  className="mx-auto mb-2"
+/>
     <p className="text-xs sm:text-sm text-gray-500">Scan QR Code to Pay</p>
   </div>
 </div>

@@ -25,7 +25,7 @@ export interface Project {
   features: string[];
   price: number;
   discount?: number;
-  status: 'available' | 'unavailable';   // ← NEW
+  status: 'available' | 'unavailable';
   download_links: {
     ppt?: string;
     report?: string;
@@ -160,7 +160,6 @@ export default function ProjectsPage() {
     }
   }, [filteredProjects]);
 
-  // Status Badge Component
   const StatusBadge = ({ status }: { status: 'available' | 'unavailable' }) => (
     <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm ${
       status === 'available' 
@@ -173,7 +172,6 @@ export default function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">Our Projects</h1>
@@ -184,7 +182,6 @@ export default function ProjectsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Category Filter */}
         <div className="mb-8 md:mb-12">
           <div className="flex flex-col sm:flex-row justify-center gap-2 md:gap-3">
             <button onClick={() => setSelectedCategory('all')}
@@ -214,7 +211,6 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <>
-            {/* Mobile Horizontal Scroll */}
             <div className="relative sm:hidden">
               {showLeftArrow && (
                 <button onClick={scrollLeft} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md">
@@ -273,7 +269,6 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            {/* Desktop Grid */}
             <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredProjects.map((project) => {
                 const discountedPrice = getDiscountedPrice(project.price, project.discount);
