@@ -8,7 +8,7 @@ import {
   Tag, ChevronLeft, ChevronRight, ArrowRight, Sparkles, Rocket, 
   Star, TrendingUp, Award, Users, Search, Grid, List, Eye, Heart, 
   Share2, Zap, Download, ExternalLink, Play, Pause, Volume2, VolumeX, 
-  Maximize, Filter, X, Clock, CheckCircle, AlertCircle 
+  Maximize, Filter, X,CheckCircle, AlertCircle 
 } from 'lucide-react';
 
 // ---------- Types & Data ----------

@@ -104,7 +104,7 @@ const useTiltEffect = () => {
 
 export default function CategoryCards() {
   const isMobile = useIsMobile();
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [, setHoveredCard] = useState<string | null>(null);
   const [mainRef, isMainVisible] = useIntersectionObserver();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
