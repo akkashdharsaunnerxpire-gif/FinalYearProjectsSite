@@ -4,7 +4,12 @@ import Aichatbot from "../assets/project_image/chatbot.png";
 import AIcarrerguidance from "../assets/project_image/Ai-carrer-guidance.png";
 import FakeNewsdetection from "../assets/project_image/fake news detection.png";
 import seatAllocation from "../assets/project_image/Seat-Allocation.png";
-import { Tag, ChevronLeft, ChevronRight, ArrowRight, Sparkles, Rocket, Star, TrendingUp, Award, Users, Search, Grid, List, Eye, Heart, Share2, Zap,Download, ExternalLink, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { 
+  Tag, ChevronLeft, ChevronRight, ArrowRight, Sparkles, Rocket, 
+  Star, TrendingUp, Award, Users, Search, Grid, List, Eye, Heart, 
+  Share2, Zap, Download, ExternalLink, Play, Pause, Volume2, VolumeX, 
+  Maximize, Filter, X, Clock, CheckCircle, AlertCircle 
+} from 'lucide-react';
 
 // ---------- Types & Data ----------
 export interface Category {
@@ -126,6 +131,7 @@ export default function ProjectsPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [videoProgress, setVideoProgress] = useState(0);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const videoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -266,7 +272,15 @@ export default function ProjectsPage() {
         ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
         : 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
     }`}>
-      {status === 'available' ? '✓ Available' : '✕ Unavailable'}
+      {status === 'available' ? (
+        <span className="flex items-center gap-1">
+          <CheckCircle className="w-3 h-3" /> Available
+        </span>
+      ) : (
+        <span className="flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" /> Unavailable
+        </span>
+      )}
     </div>
   );
 
@@ -280,19 +294,19 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30">
       {/* Video-Style Hero Section with Animated Background */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 py-16 md:py-20 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 py-12 md:py-16 lg:py-20 overflow-hidden">
         {/* Video-style animated background */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Gradient orbs like video intro */}
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-float-slow"></div>
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-float-slow animation-delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/20 rounded-full blur-3xl animate-float-slow animation-delay-4000"></div>
+          <div className="absolute -top-40 -right-40 w-64 md:w-80 lg:w-96 h-64 md:h-80 lg:h-96 bg-purple-500/30 rounded-full blur-3xl animate-float-slow"></div>
+          <div className="absolute -bottom-40 -left-40 w-64 md:w-80 lg:w-96 h-64 md:h-80 lg:h-96 bg-blue-500/30 rounded-full blur-3xl animate-float-slow animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[450px] lg:w-[600px] h-[300px] md:h-[450px] lg:h-[600px] bg-pink-500/20 rounded-full blur-3xl animate-float-slow animation-delay-4000"></div>
           
           {/* Video scan line effect */}
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-transparent animate-scan"></div>
           
           {/* Video grain effect */}
-          <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 opacity-20 hidden md:block">
             {[...Array(100)].map((_, i) => (
               <div
                 key={i}
@@ -308,10 +322,10 @@ export default function ProjectsPage() {
           </div>
 
           {/* Floating particles like video dust */}
-          {[...Array(30)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1.5 h-1.5 bg-white/20 rounded-full animate-float-particle"
+              className="absolute w-1 md:w-1.5 h-1 md:h-1.5 bg-white/20 rounded-full animate-float-particle"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -330,16 +344,16 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {/* Video Controls Overlay */}
-        <div className="absolute bottom-4 left-4 z-10 flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+        {/* Video Controls Overlay - Hidden on mobile */}
+        <div className="absolute bottom-4 left-4 z-10 hidden sm:flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
           <button 
             onClick={toggleVideo}
             className="p-1.5 rounded-full hover:bg-white/20 transition-all hover:scale-110"
           >
             {isVideoPlaying ? (
-              <Pause className="w-4 h-4 text-white" />
+              <Pause className="w-3 h-3 md:w-4 md:h-4 text-white" />
             ) : (
-              <Play className="w-4 h-4 text-white" />
+              <Play className="w-3 h-3 md:w-4 md:h-4 text-white" />
             )}
           </button>
           <button 
@@ -347,52 +361,52 @@ export default function ProjectsPage() {
             className="p-1.5 rounded-full hover:bg-white/20 transition-all hover:scale-110"
           >
             {isMuted ? (
-              <VolumeX className="w-4 h-4 text-white" />
+              <VolumeX className="w-3 h-3 md:w-4 md:h-4 text-white" />
             ) : (
-              <Volume2 className="w-4 h-4 text-white" />
+              <Volume2 className="w-3 h-3 md:w-4 md:h-4 text-white" />
             )}
           </button>
-          <span className="text-white/60 text-[10px] font-mono">
+          <span className="text-white/60 text-[8px] md:text-[10px] font-mono">
             {Math.floor(videoProgress / 100 * 60)}:{(Math.floor(videoProgress / 100 * 60) % 60).toString().padStart(2, '0')}
           </span>
-          <button className="p-1.5 rounded-full hover:bg-white/20 transition-all hover:scale-110">
-            <Maximize className="w-4 h-4 text-white" />
+          <button className="p-1.5 rounded-full hover:bg-white/20 transition-all hover:scale-110 hidden md:block">
+            <Maximize className="w-3 h-3 md:w-4 md:h-4 text-white" />
           </button>
-          <span className="text-white/40 text-[10px] font-mono">HD</span>
+          <span className="text-white/40 text-[8px] md:text-[10px] font-mono hidden md:block">HD</span>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-block mb-4 animate-fade-in">
-            <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-105 transition-transform duration-300">
-              <span className="text-sm font-medium text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 animate-spin-slow" />
+          <div className="inline-block mb-3 md:mb-4 animate-fade-in">
+            <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-105 transition-transform duration-300">
+              <span className="text-xs md:text-sm font-medium text-white flex items-center gap-1 md:gap-2">
+                <Sparkles className="w-3 h-3 md:w-4 md:h-4 animate-spin-slow" />
                 Explore Our Collection
-                <Sparkles className="w-4 h-4 animate-spin-slow" />
+                <Sparkles className="w-3 h-3 md:w-4 md:h-4 animate-spin-slow" />
               </span>
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 animate-fade-in-up">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-3 animate-fade-in-up">
             Our Projects
-            <span className="block text-xl md:text-2xl text-blue-200 mt-1">Final Year Project Marketplace</span>
+            <span className="block text-base md:text-xl lg:text-2xl text-blue-200 mt-1">Final Year Project Marketplace</span>
           </h1>
           
-          <p className="text-base md:text-lg text-blue-100 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
+          <p className="text-sm md:text-base lg:text-lg text-blue-100 max-w-2xl mx-auto px-4 animate-fade-in-up animation-delay-200">
             Browse high-quality final year projects with complete documentation
           </p>
 
           {/* Stats - Premium */}
-          <div className="mt-6 flex flex-wrap justify-center gap-4 animate-fade-in-up animation-delay-400">
+          <div className="mt-4 md:mt-6 flex flex-wrap justify-center gap-2 md:gap-4 animate-fade-in-up animation-delay-400">
             {stats.map((stat, idx) => {
               const Icon = stat.icon;
               return (
                 <div key={idx} className="group relative">
                   <div className={`absolute -inset-0.5 bg-gradient-to-r ${stat.color} rounded-xl blur opacity-0 group-hover:opacity-50 transition-all duration-500`}></div>
-                  <div className="relative flex items-center gap-3 px-4 py-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105">
-                    <Icon className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" />
-                    <div>
-                      <div className="text-base font-bold text-white">{stat.value}</div>
-                      <div className="text-[11px] text-blue-200">{stat.label}</div>
+                  <div className="relative flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105">
+                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-blue-300 group-hover:text-white transition-colors" />
+                    <div className="text-left">
+                      <div className="text-sm md:text-base font-bold text-white">{stat.value}</div>
+                      <div className="text-[9px] md:text-[11px] text-blue-200">{stat.label}</div>
                     </div>
                   </div>
                 </div>
@@ -402,10 +416,10 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 md:py-8 lg:py-10">
         {/* Filter & Search - Premium */}
-        <div className="mb-8 space-y-4">
-          <div className="relative max-w-md mx-auto">
+        <div className="mb-6 md:mb-8 space-y-3 md:space-y-4">
+          <div className="relative max-w-full md:max-w-md mx-auto">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -414,107 +428,194 @@ export default function ProjectsPage() {
               placeholder="Search projects, technologies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+              className="w-full pl-10 pr-4 py-2.5 md:py-3 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-sm md:text-base"
             />
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-wrap justify-center gap-2">
-              <button 
-                onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                  selectedCategory === 'all' 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30' 
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-700'
-                }`}
-              >
-                All Projects
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
-                    selectedCategory === cat.id 
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+            {/* Category filters - scrollable on mobile */}
+            <div className="w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+              <div className="flex gap-1.5 md:gap-2 min-w-max md:flex-wrap md:justify-center">
+                <button 
+                  onClick={() => setSelectedCategory('all')}
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap ${
+                    selectedCategory === 'all' 
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30' 
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-700'
                   }`}
                 >
-                  {cat.name}
+                  All Projects
                 </button>
-              ))}
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap ${
+                      selectedCategory === cat.id 
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-1">
-                <button
-                  onClick={() => setActiveFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    activeFilter === 'all' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setActiveFilter('available')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    activeFilter === 'available' ? 'bg-green-600 text-white' : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                >
-                  Available
-                </button>
-                <button
-                  onClick={() => setActiveFilter('discounted')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    activeFilter === 'discounted' ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                >
-                  🔥 Discount
-                </button>
-              </div>
-
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 transition-all"
+            {/* Controls - responsive */}
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
+              {/* Mobile filter toggle */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="md:hidden px-3 py-1.5 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm flex items-center gap-2"
               >
-                <option value="popular">🔥 Popular</option>
-                <option value="newest">📅 Newest</option>
-                <option value="price-low">💰 Price: Low</option>
-                <option value="price-high">💰 Price: High</option>
-              </select>
+                <Filter className="w-4 h-4" />
+                Filters
+              </button>
 
-              <div className="flex gap-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
-                    viewMode === 'grid' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'
-                  }`}
+              {/* Desktop controls */}
+              <div className="hidden md:flex items-center gap-2 md:gap-3">
+                <div className="flex gap-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setActiveFilter('all')}
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all ${
+                      activeFilter === 'all' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('available')}
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all ${
+                      activeFilter === 'available' ? 'bg-green-600 text-white' : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    Available
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('discounted')}
+                    className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all ${
+                      activeFilter === 'discounted' ? 'bg-orange-600 text-white' : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    🔥 Discount
+                  </button>
+                </div>
+
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 transition-all"
                 >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
-                    viewMode === 'list' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
+                  <option value="popular">🔥 Popular</option>
+                  <option value="newest">📅 Newest</option>
+                  <option value="price-low">💰 Price: Low</option>
+                  <option value="price-high">💰 Price: High</option>
+                </select>
+
+                <div className="flex gap-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 md:p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                      viewMode === 'grid' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Grid className="w-3 h-3 md:w-4 md:h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1.5 md:p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                      viewMode === 'list' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    <List className="w-3 h-3 md:w-4 md:h-4" />
+                  </button>
+                </div>
               </div>
+
+              {/* Mobile filter dropdown */}
+              {showMobileFilters && (
+                <div className="w-full md:hidden bg-white dark:bg-gray-800 rounded-xl p-4 shadow-xl border border-gray-200 dark:border-gray-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Filters</h4>
+                    <button onClick={() => setShowMobileFilters(false)}>
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setActiveFilter('all'); setShowMobileFilters(false); }}
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => { setActiveFilter('available'); setShowMobileFilters(false); }}
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        activeFilter === 'available' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      Available
+                    </button>
+                    <button
+                      onClick={() => { setActiveFilter('discounted'); setShowMobileFilters(false); }}
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                        activeFilter === 'discounted' ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      🔥 Discount
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="flex-1 px-3 py-2 text-xs bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    >
+                      <option value="popular">🔥 Popular</option>
+                      <option value="newest">📅 Newest</option>
+                      <option value="price-low">💰 Price: Low</option>
+                      <option value="price-high">💰 Price: High</option>
+                    </select>
+
+                    <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                      <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-lg transition-all ${
+                          viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-500'
+                        }`}
+                      >
+                        <Grid className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-lg transition-all ${
+                          viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-500'
+                        }`}
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {filteredProjects.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-block p-6 bg-white dark:bg-gray-800 rounded-full shadow-xl mb-4 animate-float-slow">
-              <Tag className="w-12 h-12 text-gray-400" />
+          <div className="text-center py-12 md:py-20">
+            <div className="inline-block p-4 md:p-6 bg-white dark:bg-gray-800 rounded-full shadow-xl mb-4 animate-float-slow">
+              <Tag className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No projects found.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg">No projects found.</p>
             <button
               onClick={() => { setSelectedCategory('all'); setSearchQuery(''); setActiveFilter('all'); }}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium hover:scale-105 transition-all inline-flex items-center gap-2"
+              className="mt-4 text-blue-600 hover:text-blue-700 font-medium hover:scale-105 transition-all inline-flex items-center gap-2 text-sm md:text-base"
             >
               View all projects <ArrowRight className="w-4 h-4" />
             </button>
@@ -534,12 +635,12 @@ export default function ProjectsPage() {
                 </button>
               )}
 
-              <div ref={scrollContainerRef} className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+              <div ref={scrollContainerRef} className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
                 {filteredProjects.map((project) => {
                   const discountedPrice = getDiscountedPrice(project.price, project.discount);
                   return (
                     <Link key={project.id} to={`/project/${project.id}`}
-                      className="project-card min-w-[240px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col snap-start opacity-0 hover:scale-[1.02]"
+                      className="project-card min-w-[200px] max-w-[240px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col snap-start opacity-0 hover:scale-[1.02]"
                     >
                       <div className="relative h-32 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
                         {project.image_url && (
@@ -547,28 +648,28 @@ export default function ProjectsPage() {
                         )}
                         <StatusBadge status={project.status} />
                         {project.discount && (
-                          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg animate-pulse-glow">
-                            🔥 {project.discount}% OFF
+                          <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-2 py-0.5 rounded-full text-[8px] font-bold shadow-lg animate-pulse-glow">
+                            🔥 {project.discount}%
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                       </div>
 
-                      <div className="p-4 flex flex-col flex-1">
+                      <div className="p-3 flex flex-col flex-1">
                         <div className="flex items-start justify-between mb-1">
-                          <h3 className="font-semibold text-sm line-clamp-1 flex-1">{project.title}</h3>
+                          <h3 className="font-semibold text-xs line-clamp-1 flex-1">{project.title}</h3>
                           <button 
                             onClick={(e) => toggleLike(project.id, e)}
-                            className="ml-2 text-gray-400 hover:text-red-500 transition-colors hover:scale-125"
+                            className="ml-1 text-gray-400 hover:text-red-500 transition-colors hover:scale-125"
                           >
-                            <Heart className={`w-4 h-4 ${likedProjects.includes(project.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                            <Heart className={`w-3.5 h-3.5 ${likedProjects.includes(project.id) ? 'fill-red-500 text-red-500' : ''}`} />
                           </button>
                         </div>
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{project.short_description}</p>
+                        <p className="text-[10px] text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{project.short_description}</p>
 
-                        <div className="flex flex-wrap gap-1 mb-3">
+                        <div className="flex flex-wrap gap-1 mb-2">
                           {project.tech_stack.slice(0, 2).map((tech, i) => (
-                            <span key={i} className="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
+                            <span key={i} className="text-[8px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
                               {tech}
                             </span>
                           ))}
@@ -578,14 +679,14 @@ export default function ProjectsPage() {
                           <div>
                             {project.discount ? (
                               <>
-                                <span className="text-[10px] line-through text-gray-400">₹{project.price}</span>
-                                <span className="font-bold text-base ml-1 text-blue-600">₹{discountedPrice}</span>
+                                <span className="text-[8px] line-through text-gray-400">₹{project.price}</span>
+                                <span className="font-bold text-sm ml-1 text-blue-600">₹{discountedPrice}</span>
                               </>
                             ) : (
-                              <span className="font-bold text-base text-blue-600">₹{project.price}</span>
+                              <span className="font-bold text-sm text-blue-600">₹{project.price}</span>
                             )}
                           </div>
-                          <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-medium hover:shadow-lg hover:scale-105 transition-all">
+                          <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2.5 py-1 rounded-lg text-[9px] font-medium hover:shadow-lg hover:scale-105 transition-all">
                             View
                           </button>
                         </div>
@@ -596,8 +697,12 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            {/* Desktop Grid/List View - Intermediate Size */}
-            <div className={`hidden sm:grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'grid-cols-1 gap-4'}`}>
+            {/* Desktop Grid/List View */}
+            <div className={`hidden sm:grid ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-6' 
+                : 'grid-cols-1 gap-4 md:gap-6'
+            }`}>
               {filteredProjects.map((project, index) => {
                 const discountedPrice = getDiscountedPrice(project.price, project.discount);
                 const isHovered = hoveredProject === project.id;
@@ -608,7 +713,7 @@ export default function ProjectsPage() {
                     key={project.id}
                     to={`/project/${project.id}`}
                     className={`project-card group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden opacity-0 ${
-                      viewMode === 'list' ? 'flex' : 'flex flex-col'
+                      viewMode === 'list' ? 'flex flex-col md:flex-row' : 'flex flex-col'
                     } hover:-translate-y-2`}
                     style={{ animationDelay: `${index * 0.08}s` }}
                     onMouseEnter={() => setHoveredProject(project.id)}
@@ -617,8 +722,12 @@ export default function ProjectsPage() {
                     {/* Premium glow effect */}
                     <div className={`absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-2xl transition-all duration-700 ${isHovered ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}></div>
 
-                    {/* Image Section - Intermediate */}
-                    <div className={`relative ${viewMode === 'list' ? 'w-[220px] min-h-[160px]' : 'h-[180px]'} bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden flex-shrink-0`}>
+                    {/* Image Section */}
+                    <div className={`relative ${
+                      viewMode === 'list' 
+                        ? 'w-full md:w-[200px] lg:w-[280px] h-[160px] md:h-auto md:min-h-[180px]' 
+                        : 'h-[160px] md:h-[200px] lg:h-[220px]'
+                    } bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden flex-shrink-0`}>
                       {project.image_url && (
                         <img 
                           src={project.image_url} 
@@ -628,7 +737,7 @@ export default function ProjectsPage() {
                       )}
                       <StatusBadge status={project.status} />
                       {project.discount && (
-                        <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-[11px] font-bold shadow-lg animate-pulse-glow">
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-bold shadow-lg animate-pulse-glow">
                           🔥 {project.discount}% OFF
                         </div>
                       )}
@@ -637,25 +746,25 @@ export default function ProjectsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                       {/* Premium action buttons */}
-                      <div className={`absolute bottom-3 right-3 flex gap-2 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                      <div className={`absolute bottom-3 right-3 flex gap-1 md:gap-2 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                         <button 
                           onClick={(e) => toggleLike(project.id, e)}
-                          className="p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300"
+                          className="p-1.5 md:p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300"
                         >
-                          <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700 hover:text-red-500'}`} />
+                          <Heart className={`w-3 h-3 md:w-4 md:h-4 ${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700 hover:text-red-500'}`} />
                         </button>
-                        <button className="p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300">
-                          <Share2 className="w-4 h-4 text-gray-700 hover:text-blue-500" />
+                        <button className="p-1.5 md:p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300">
+                          <Share2 className="w-3 h-3 md:w-4 md:h-4 text-gray-700 hover:text-blue-500" />
                         </button>
-                        <button className="p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300">
-                          <Download className="w-4 h-4 text-gray-700 hover:text-purple-500" />
+                        <button className="p-1.5 md:p-2 bg-white/90 backdrop-blur rounded-full shadow-lg hover:scale-110 transition-all duration-300 hidden sm:block">
+                          <Download className="w-3 h-3 md:w-4 md:h-4 text-gray-700 hover:text-purple-500" />
                         </button>
                       </div>
 
                       {/* Tech stack floating badges */}
-                      <div className={`absolute bottom-3 left-3 flex gap-1 transition-all duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                      <div className={`absolute bottom-3 left-3 flex gap-1 transition-all duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'} hidden sm:flex`}>
                         {project.tech_stack.slice(0, 2).map((tech, i) => (
-                          <span key={i} className="text-[8px] bg-black/50 backdrop-blur text-white px-2 py-0.5 rounded-full">
+                          <span key={i} className="text-[7px] md:text-[8px] bg-black/50 backdrop-blur text-white px-1.5 md:px-2 py-0.5 rounded-full">
                             {tech}
                           </span>
                         ))}
@@ -663,30 +772,34 @@ export default function ProjectsPage() {
                     </div>
 
                     {/* Content Section - Premium */}
-                    <div className={`flex-1 p-5 flex flex-col ${viewMode === 'list' ? 'justify-between' : ''}`}>
+                    <div className={`flex-1 p-4 md:p-5 flex flex-col ${
+                      viewMode === 'list' ? 'md:justify-between' : ''
+                    }`}>
                       {/* Category badge with animation */}
-                      <div className="mb-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800 hover:scale-105 transition-all duration-300">
-                          <Zap className="w-3 h-3" />
+                      <div className="mb-1 md:mb-2">
+                        <span className="inline-flex items-center gap-1 text-[8px] md:text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 md:px-3 py-0.5 md:py-1 rounded-full border border-blue-100 dark:border-blue-800 hover:scale-105 transition-all duration-300">
+                          <Zap className="w-2.5 h-2.5 md:w-3 md:h-3" />
                           {categories.find(c => c.id === project.category_id)?.name || project.category_id}
                         </span>
                       </div>
 
-                      <h3 className={`font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${
-                        viewMode === 'list' ? 'text-lg' : 'text-base'
+                      <h3 className={`font-bold mb-1 md:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${
+                        viewMode === 'list' ? 'text-base md:text-lg' : 'text-sm md:text-base'
                       } line-clamp-1`}>
                         {project.title}
                       </h3>
                       
-                      <p className={`text-gray-600 dark:text-gray-400 mb-3 ${viewMode === 'list' ? 'text-sm' : 'text-xs'} line-clamp-2`}>
+                      <p className={`text-gray-600 dark:text-gray-400 mb-2 md:mb-3 ${
+                        viewMode === 'list' ? 'text-xs md:text-sm' : 'text-[11px] md:text-xs'
+                      } line-clamp-2`}>
                         {project.short_description}
                       </p>
 
                       {/* Features preview with animation */}
                       {viewMode === 'list' && (
-                        <div className="flex flex-wrap gap-2 mb-3">
+                        <div className="flex flex-wrap gap-1 md:gap-2 mb-2 md:mb-3">
                           {project.features.slice(0, 3).map((feature, i) => (
-                            <span key={i} className="inline-flex items-center gap-1 text-[10px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                            <span key={i} className="inline-flex items-center gap-1 text-[8px] md:text-[10px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 md:px-2 py-0.5 rounded-full animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                               <span className="w-1 h-1 bg-green-500 rounded-full"></span>
                               {feature}
                             </span>
@@ -695,52 +808,52 @@ export default function ProjectsPage() {
                       )}
 
                       {/* Tech Stack with animation */}
-                      <div className="flex flex-wrap gap-1.5 mb-3">
+                      <div className="flex flex-wrap gap-1 md:gap-1.5 mb-2 md:mb-3">
                         {project.tech_stack.slice(0, viewMode === 'list' ? 4 : 3).map((tech, i) => (
-                          <span key={i} className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-full border border-gray-200 dark:border-gray-600 hover:scale-105 transition-all duration-300 hover:border-blue-400">
+                          <span key={i} className="text-[8px] md:text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full border border-gray-200 dark:border-gray-600 hover:scale-105 transition-all duration-300 hover:border-blue-400">
                             {tech}
                           </span>
                         ))}
                         {project.tech_stack.length > (viewMode === 'list' ? 4 : 3) && (
-                          <span className="text-[10px] text-gray-400">+{project.tech_stack.length - (viewMode === 'list' ? 4 : 3)}</span>
+                          <span className="text-[8px] md:text-[10px] text-gray-400">+{project.tech_stack.length - (viewMode === 'list' ? 4 : 3)}</span>
                         )}
                       </div>
 
                       {/* Bottom row - Premium */}
-                      <div className="mt-auto flex justify-between items-center pt-3 border-t-2 border-gray-100 dark:border-gray-700">
+                      <div className="mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 md:pt-3 border-t-2 border-gray-100 dark:border-gray-700">
                         <div className="flex flex-col">
                           {project.discount ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm line-through text-gray-400">₹{project.price}</span>
-                              <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">₹{discountedPrice}</span>
+                            <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                              <span className="text-xs md:text-sm line-through text-gray-400">₹{project.price}</span>
+                              <span className="font-bold text-xl md:text-2xl text-blue-600 dark:text-blue-400">₹{discountedPrice}</span>
                             </div>
                           ) : (
-                            <span className="font-bold text-2xl text-blue-600 dark:text-blue-400">₹{project.price}</span>
+                            <span className="font-bold text-xl md:text-2xl text-blue-600 dark:text-blue-400">₹{project.price}</span>
                           )}
                           {project.discount && (
-                            <div className="text-[10px] text-green-600 dark:text-green-400 font-medium">Save {project.discount}%</div>
+                            <div className="text-[8px] md:text-[10px] text-green-600 dark:text-green-400 font-medium">Save {project.discount}%</div>
                           )}
                         </div>
                         
-                        <button className="group relative overflow-hidden flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-medium hover:shadow-xl hover:scale-105 transition-all duration-300">
+                        <button className="w-full sm:w-auto group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-medium hover:shadow-xl hover:scale-105 transition-all duration-300 text-xs md:text-sm">
                           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-all duration-1000"></span>
-                          <span className="relative flex items-center gap-2">
+                          <span className="relative flex items-center gap-1 md:gap-2">
                             View Details
-                            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                            <ExternalLink className="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                           </span>
                         </button>
                       </div>
                     </div>
 
                     {/* View counter with animation */}
-                    <div className="absolute top-3 left-3 flex items-center gap-1 text-[10px] text-white/80 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full hover:scale-105 transition-all duration-300">
-                      <Eye className="w-3 h-3" />
-                      <span>{Math.floor(Math.random() * 100) + 50}</span>
-                      <span className="text-[8px] text-white/50">views</span>
+                    <div className="absolute top-3 left-3 flex items-center gap-1 text-[8px] md:text-[10px] text-white/80 bg-black/40 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-full hover:scale-105 transition-all duration-300">
+                      <Eye className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                      <span className="hidden xs:inline">{Math.floor(Math.random() * 100) + 50}</span>
+                      <span className="text-[6px] md:text-[8px] text-white/50">views</span>
                     </div>
 
                     {/* Status indicator dot */}
-                    <div className={`absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse ${
+                    <div className={`absolute top-3 right-3 w-1.5 md:w-2 h-1.5 md:h-2 rounded-full animate-pulse ${
                       project.status === 'available' ? 'bg-green-400' : 'bg-red-400'
                     }`}></div>
                   </Link>
@@ -752,15 +865,15 @@ export default function ProjectsPage() {
 
         {/* Load More - Premium */}
         {filteredProjects.length > 0 && (
-          <div className="text-center mt-12 animate-fade-in-up animation-delay-600">
+          <div className="text-center mt-8 md:mt-12 animate-fade-in-up animation-delay-600">
             <div className="inline-block relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl blur-xl animate-pulse-glow"></div>
-              <button className="relative group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+              <button className="relative group px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden text-sm md:text-base">
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-all duration-1000"></span>
-                <span className="flex items-center gap-3">
+                <span className="flex items-center gap-2 md:gap-3">
                   Load More Projects
-                  <Rocket className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  <Sparkles className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                  <Rocket className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  <Sparkles className="w-3 h-3 md:w-4 md:h-4 group-hover:rotate-180 transition-transform duration-500 hidden sm:inline" />
                 </span>
               </button>
             </div>
