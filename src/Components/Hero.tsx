@@ -8,7 +8,7 @@ export default function Hero() {
   const [promoMessage, setPromoMessage] = useState('');
   const heroRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const promoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+ const promoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Promo messages
   const promoMessages = [

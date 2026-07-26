@@ -5,7 +5,6 @@ import { projects } from './ProjectsPage';
 import {
   FileText,
   ArrowLeft,
-  FileCode,
   CheckCircle,
   AlertCircle,
   MessageCircle,
@@ -36,18 +35,13 @@ const staggerContainer = {
   }
 };
 
-const scaleOnHover = {
-  hover: { scale: 1.03, transition: { duration: 0.2 } },
-  tap: { scale: 0.97 }
-};
-
 const floatingAnimation = {
   animate: {
     y: [0, -10, 0],
     transition: {
       duration: 3,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
@@ -62,7 +56,7 @@ const pulseGlow = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };

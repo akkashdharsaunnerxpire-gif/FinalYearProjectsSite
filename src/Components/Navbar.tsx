@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { GraduationCap, Menu, X, Sparkles, Rocket, Zap, Award, Users, Laptop, Moon, Sun, Coffee, BookOpen, Code } from 'lucide-react';
+import { GraduationCap, Menu, X, Sparkles, Rocket, Award, Users, Laptop, Moon, Sun, Code } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Navbar() {
@@ -9,9 +9,9 @@ export default function Navbar() {
   const [promoMessage, setPromoMessage] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [studentAnimation, setStudentAnimation] = useState('idle');
-  const promoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const promoIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const studentIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const promoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const promoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const studentIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Promo messages with laptop/student theme
   const promoMessages = [
@@ -418,7 +418,7 @@ export default function Navbar() {
 
 // Desktop Nav Link Component
 const NavLink = ({ to, href, icon, children }: { to?: string; href?: string; icon: string; children: React.ReactNode }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [, setIsHovered] = useState(false);
   
   const commonClasses = `
     relative px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300

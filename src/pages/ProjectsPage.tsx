@@ -4,7 +4,7 @@ import Aichatbot from "../assets/project_image/chatbot.png";
 import AIcarrerguidance from "../assets/project_image/Ai-carrer-guidance.png";
 import FakeNewsdetection from "../assets/project_image/fake news detection.png";
 import seatAllocation from "../assets/project_image/Seat-Allocation.png";
-import { Tag, ChevronLeft, ChevronRight, ArrowRight, Sparkles, Rocket, Star, TrendingUp, Award, Users, Search, Grid, List, Eye, Heart, Share2, Zap, Clock, Download, ExternalLink, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { Tag, ChevronLeft, ChevronRight, ArrowRight, Sparkles, Rocket, Star, TrendingUp, Award, Users, Search, Grid, List, Eye, Heart, Share2, Zap,Download, ExternalLink, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 
 // ---------- Types & Data ----------
 export interface Category {
@@ -126,7 +126,7 @@ export default function ProjectsPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [videoProgress, setVideoProgress] = useState(0);
-  const videoIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const videoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);

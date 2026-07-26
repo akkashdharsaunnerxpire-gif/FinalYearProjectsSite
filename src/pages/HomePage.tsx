@@ -1,14 +1,14 @@
 import Hero from '../Components/Hero';
 import CategoryCards from '../Components/CategoryCards';
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles, Rocket, Zap, Award, Users, TrendingUp, Star, ChevronDown, ArrowUp } from 'lucide-react';
+import { Sparkles,  Award, Users, TrendingUp, Star, ChevronDown, ArrowUp } from 'lucide-react';
 
 export default function HomePage() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
 
   // Advanced particle system for background
   useEffect(() => {
@@ -37,8 +37,8 @@ export default function HomePage() {
       pulseOffset: number;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.size = Math.random() * 3 + 1;
         this.speedX = (Math.random() - 0.5) * 0.3;
         this.speedY = (Math.random() - 0.5) * 0.3;
@@ -54,9 +54,8 @@ export default function HomePage() {
         this.y += this.speedY;
         this.size += Math.sin(time * this.pulseSpeed + this.pulseOffset) * 0.02;
         this.size = Math.max(0.5, Math.min(4, this.size));
-
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.speedY *= -1;
       }
 
       draw(ctx: CanvasRenderingContext2D, time: number) {

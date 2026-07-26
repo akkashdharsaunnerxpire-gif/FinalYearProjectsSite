@@ -1,7 +1,7 @@
 import { Brain, Code, Cpu, ArrowRight, Sparkles, Rocket, Zap, Globe, Database, Cloud, Shield, Layers, Terminal, Workflow, Play, Star, TrendingUp, Award, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { categories } from '../lib/types';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Brain,
@@ -85,113 +85,13 @@ const useAdvancedTilt = () => {
   return [ref, tilt, isHovered] as const;
 };
 
-// Custom video-like particle system with canvas
-const useParticleCanvas = (categories: any[]) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resize = () => {
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      if (rect) {
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        setDimensions({ width: rect.width, height: rect.height });
-      }
-    };
-
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Create particles
-    const particles: any[] = [];
-    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#F59E0B', '#10B981'];
-
-    for (let i = 0; i < 100; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 3 + 1,
-        speedX: (Math.random() - 0.5) * 0.5,
-        speedY: (Math.random() - 0.5) * 0.5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        opacity: Math.random() * 0.3 + 0.1,
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.02 + 0.005,
-      });
-    }
-
-    let animationId: number;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-        p.pulse += p.pulseSpeed;
-        const opacity = p.opacity * (0.7 + 0.3 * Math.sin(p.pulse));
-
-        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (0.8 + 0.2 * Math.sin(p.pulse)), 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = opacity;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 10;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
-      });
-
-      // Draw connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 150) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = '#8B5CF6';
-            ctx.globalAlpha = (1 - dist / 150) * 0.05;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
-        }
-      }
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationId);
-    };
-  }, [categories]);
-
-  return canvasRef;
-};
 
 export default function CategoryCards() {
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [mainRef, isMainVisible, mainEntry] = useAdvancedIntersection();
+  const [, setHoveredCard] = useState<string | null>(null);
+  const [mainRef, isMainVisible] = useAdvancedIntersection();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Auto-play carousel effect for cards
   useEffect(() => {

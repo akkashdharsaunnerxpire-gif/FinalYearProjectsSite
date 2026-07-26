@@ -5,24 +5,12 @@ import {
   MapPin, 
   Send, 
   ArrowUpRight,
-  Github,
-  Twitter,
-  Linkedin,
-  Youtube,
   Sparkles,
-  Rocket,
   Heart,
   Shield,
   Award,
   Clock,
   ChevronUp,
-  Zap,
-  Star,
-  Code,
-  Database,
-  Globe,
-  Layers,
-  ExternalLink
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -31,7 +19,7 @@ export default function Footer() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [, setHoveredLink] = useState<string | null>(null);
   const footerRef = useRef<HTMLElement>(null);
   const particleCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -191,13 +179,6 @@ export default function Footer() {
       transition: 'transform 0.1s ease-out'
     };
   }, [mousePosition]);
-
-  const socialLinks = [
-    { Icon: Github, href: '#', label: 'GitHub', color: 'hover:bg-[#333]' },
-    { Icon: Twitter, href: '#', label: 'Twitter', color: 'hover:bg-[#1DA1F2]' },
-    { Icon: Linkedin, href: '#', label: 'LinkedIn', color: 'hover:bg-[#0A66C2]' },
-    { Icon: Youtube, href: '#', label: 'YouTube', color: 'hover:bg-[#FF0000]' },
-  ];
 
   const quickLinks = [
     { name: 'Home', path: '/', icon: '🏠' },
@@ -449,20 +430,6 @@ export default function Footer() {
                 </p>
               )}
             </form>
-
-            {/* Social Links */}
-            <div className="flex gap-2 pt-1">
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  aria-label={social.label}
-                  className={`p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all duration-300 group hover:${social.color}`}
-                >
-                  <social.Icon className="w-4 h-4 group-hover:scale-110 group-hover:rotate-3 transition-transform" />
-                </a>
-              ))}
-            </div>
           </div>
         </div>
 
