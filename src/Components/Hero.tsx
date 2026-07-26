@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles, Rocket, Zap, Code2, Brain, Cpu } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -8,45 +8,54 @@ export default function Hero() {
   const [promoMessage, setPromoMessage] = useState('');
   const heroRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
- const promoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const promoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
-  // Promo messages
-  const promoMessages = [
+  // Mobile detection
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || 'ontouchstart' in window;
+  }, []);
+
+  // Promo messages - reduced for mobile
+  const promoMessages = useMemo(() => isMobile ? [
+    { icon: '💻', text: 'Student Special: 30% OFF on AI Projects!' },
+    { icon: '🎓', text: 'Projects starting at ₹499!' },
+    { icon: '🚀', text: 'Premium Projects with Source Code!' },
+  ] : [
     { icon: '💻', text: 'Student Special: Get 30% OFF on AI Projects!' },
     { icon: '🎓', text: 'Final Year Projects starting at just ₹499!' },
     { icon: '🚀', text: 'Premium Web Dev Projects with Source Code!' },
     { icon: '🧠', text: 'ML Projects with Complete Documentation!' },
     { icon: '🌟', text: 'Limited Time: Buy 2 Get 1 Free!' },
     { icon: '📚', text: 'Top Rated Projects by 500+ Students!' },
-  ];
+  ], [isMobile]);
 
-  // Show promo animation every 1 MINUTE (60 seconds)
+  // Show promo animation - adjusted timing for mobile
   useEffect(() => {
     const showPromoWithMessage = () => {
       const randomMessage = promoMessages[Math.floor(Math.random() * promoMessages.length)];
       setPromoMessage(`${randomMessage.icon} ${randomMessage.text}`);
       setShowPromo(true);
       
-      // Clear existing timeout
       if (promoTimeoutRef.current) {
         clearTimeout(promoTimeoutRef.current);
       }
       
-      // Hide promo after 5 seconds (still visible for 5 seconds)
       promoTimeoutRef.current = setTimeout(() => {
         setShowPromo(false);
-      }, 5000);
+      }, isMobile ? 4000 : 5000);
     };
 
-    // Show initial promo after 1 second
+    // Show initial promo after 2 seconds on mobile
     const initialTimeout = setTimeout(() => {
       showPromoWithMessage();
-    }, 1000);
+    }, isMobile ? 2000 : 1000);
 
-    // Set interval for every 60 seconds (1 minute)
+    // Longer interval on mobile to reduce distractions
     const interval = setInterval(() => {
       showPromoWithMessage();
-    }, 60000); // Changed from 8000 to 60000 (1 minute)
+    }, isMobile ? 120000 : 60000); // 2 min on mobile, 1 min on desktop
 
     return () => {
       clearTimeout(initialTimeout);
@@ -55,10 +64,12 @@ export default function Hero() {
         clearTimeout(promoTimeoutRef.current);
       }
     };
-  }, []);
+  }, [promoMessages, isMobile]);
 
-  // Mouse tracking for parallax effect
+  // Mouse tracking for parallax effect - disabled on mobile
   useEffect(() => {
+    if (isMobile) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect();
@@ -70,9 +81,9 @@ export default function Hero() {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
-  // Particle system for background
+  // Particle system - optimized for mobile
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -80,8 +91,18 @@ export default function Hero() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Reduce particle count on mobile
+    const particleCount = isMobile ? 30 : 100;
+    const connectionDistance = isMobile ? 60 : 100;
+    const particleSize = isMobile ? 1.5 : 3;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+
+    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'];
 
     const particles: Array<{
       x: number;
@@ -93,44 +114,49 @@ export default function Hero() {
       opacity: number;
     }> = [];
 
-    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'];
-
-    // Create particles
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 3 + 1,
+        vx: (Math.random() - 0.5) * (isMobile ? 0.3 : 0.5),
+        vy: (Math.random() - 0.5) * (isMobile ? 0.3 : 0.5),
+        size: Math.random() * particleSize + 0.5,
         color: colors[Math.floor(Math.random() * colors.length)],
-        opacity: Math.random() * 0.5 + 0.1,
+        opacity: Math.random() * (isMobile ? 0.3 : 0.5) + 0.1,
       });
     }
 
-    let mouseX = 0;
-    let mouseY = 0;
+    let mouseX = -1000;
+    let mouseY = -1000;
 
-    const handleMouseMoveCanvas = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    };
-
-    window.addEventListener('mousemove', handleMouseMoveCanvas);
+    // Only track mouse on desktop
+    if (!isMobile) {
+      const handleMouseMoveCanvas = (e: MouseEvent) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      };
+      window.addEventListener('mousemove', handleMouseMoveCanvas);
+    }
 
     const animate = () => {
+      if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach((particle) => {
-        // Mouse interaction
-        const dx = mouseX - particle.x;
-        const dy = mouseY - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      // Don't draw connections on mobile for performance
+      const drawConnections = !isMobile;
 
-        if (distance < 150) {
-          const force = (150 - distance) / 150;
-          particle.vx += (dx / distance) * force * 0.02;
-          particle.vy += (dy / distance) * force * 0.02;
+      particles.forEach((particle) => {
+        // Mouse interaction - only on desktop
+        if (!isMobile) {
+          const dx = mouseX - particle.x;
+          const dy = mouseY - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 150) {
+            const force = (150 - distance) / 150;
+            particle.vx += (dx / distance) * force * 0.02;
+            particle.vy += (dy / distance) * force * 0.02;
+          }
         }
 
         particle.x += particle.vx;
@@ -138,7 +164,6 @@ export default function Hero() {
         particle.vx *= 0.99;
         particle.vy *= 0.99;
 
-        // Wrap around edges
         if (particle.x < 0) particle.x = canvas.width;
         if (particle.x > canvas.width) particle.x = 0;
         if (particle.y < 0) particle.y = canvas.height;
@@ -151,87 +176,93 @@ export default function Hero() {
         ctx.globalAlpha = particle.opacity;
         ctx.fill();
 
-        // Draw connections
-        particles.forEach((particle2) => {
-          const dx2 = particle.x - particle2.x;
-          const dy2 = particle.y - particle2.y;
-          const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        // Draw connections - only on desktop
+        if (drawConnections) {
+          for (let i = 0; i < particles.length; i++) {
+            const particle2 = particles[i];
+            const dx2 = particle.x - particle2.x;
+            const dy2 = particle.y - particle2.y;
+            const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
 
-          if (distance2 < 100) {
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(particle2.x, particle2.y);
-            ctx.strokeStyle = '#8B5CF6';
-            ctx.globalAlpha = 0.1 * (1 - distance2 / 100);
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            if (distance2 < connectionDistance) {
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(particle2.x, particle2.y);
+              ctx.strokeStyle = '#8B5CF6';
+              ctx.globalAlpha = 0.1 * (1 - distance2 / connectionDistance);
+              ctx.lineWidth = isMobile ? 0.5 : 1;
+              ctx.stroke();
+            }
           }
-        });
+        }
       });
 
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
     animate();
 
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      resizeCanvas();
     };
 
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMoveCanvas);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isMobile]);
 
-  // Floating icons animation
-  const floatingIcons = [
+  // Floating icons - reduced on mobile
+  const floatingIcons = useMemo(() => isMobile ? [] : [
     { Icon: Code2, delay: '0s', x: -20, y: -10 },
     { Icon: Brain, delay: '0.5s', x: 20, y: 10 },
     { Icon: Cpu, delay: '1s', x: -15, y: 15 },
     { Icon: Rocket, delay: '1.5s', x: 25, y: -15 },
     { Icon: Zap, delay: '2s', x: -25, y: 5 },
     { Icon: Sparkles, delay: '2.5s', x: 15, y: -20 },
-  ];
+  ], [isMobile]);
 
-  // Promo popup component
-  const PromoPopup = () => {
+  // Promo popup component - optimized for mobile
+  const PromoPopup = useCallback(() => {
     if (!showPromo) return null;
 
     return (
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-promo-slide">
-        <div className="relative max-w-2xl mx-auto px-4">
-          <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-4 overflow-hidden">
-            {/* Animated background particles */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float"></div>
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float animation-delay-2000"></div>
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-1 h-1 bg-white/20 rounded-full animate-particle"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    animationDelay: `${i * 0.3}s`,
-                    animationDuration: `${2 + Math.random() * 2}s`,
-                  }}
-                />
-              ))}
-            </div>
+      <div className={`fixed ${isMobile ? 'top-16' : 'top-20'} left-1/2 -translate-x-1/2 z-50 animate-promo-slide w-[95%] md:w-auto`}>
+        <div className="relative max-w-2xl mx-auto px-2 md:px-4">
+          <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-4 overflow-hidden">
+            {/* Animated background - simplified on mobile */}
+            {!isMobile && (
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float animation-delay-2000"></div>
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-1 h-1 bg-white/20 rounded-full animate-particle"
+                    style={{
+                      top: `${Math.random() * 100}%`,
+                      left: `${Math.random() * 100}%`,
+                      animationDelay: `${i * 0.3}s`,
+                      animationDuration: `${2 + Math.random() * 2}s`,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
 
-            <div className="relative flex items-center gap-4">
-              {/* Animated icon */}
+            <div className="relative flex items-center gap-2 md:gap-4">
+              {/* Animated icon - smaller on mobile */}
               <div className="relative flex-shrink-0">
-                <div className="relative w-14 h-14 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center animate-float-laptop">
-                  <span className="text-3xl">🎯</span>
+                <div className={`relative ${isMobile ? 'w-10 h-10' : 'w-14 h-14'} bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl flex items-center justify-center ${!isMobile ? 'animate-float-laptop' : ''}`}>
+                  <span className={`${isMobile ? 'text-2xl' : 'text-3xl'}`}>🎯</span>
                   <div className="absolute -top-1 -right-1">
                     <div className="relative">
-                      <div className="w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-                      <div className="absolute top-0 left-0 w-3 h-3 bg-green-400 rounded-full"></div>
+                      <div className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'} bg-green-400 rounded-full animate-ping`}></div>
+                      <div className={`absolute top-0 left-0 ${isMobile ? 'w-2 h-2' : 'w-3 h-3'} bg-green-400 rounded-full`}></div>
                     </div>
                   </div>
                 </div>
@@ -239,22 +270,26 @@ export default function Hero() {
 
               {/* Promo message */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold text-yellow-300 bg-yellow-500/20 px-2 py-0.5 rounded-full animate-pulse-glow">
-                    ⭐ SPECIAL OFFER
-                  </span>
-                  <span className="text-xs text-white/60 flex items-center gap-1">
-                    <span className="hidden sm:inline">Limited Time</span>
-                  </span>
-                </div>
-                <p className="text-white font-semibold text-sm md:text-base truncate">
+                {!isMobile && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-yellow-300 bg-yellow-500/20 px-2 py-0.5 rounded-full animate-pulse-glow">
+                      ⭐ SPECIAL OFFER
+                    </span>
+                    <span className="text-xs text-white/60 flex items-center gap-1">
+                      <span className="hidden sm:inline">Limited Time</span>
+                    </span>
+                  </div>
+                )}
+                <p className={`text-white font-semibold ${isMobile ? 'text-xs' : 'text-sm md:text-base'} truncate`}>
                   {promoMessage}
                 </p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1 text-xs text-white/80">
-                    <span>🔥 Hurry up!</span>
+                {!isMobile && (
+                  <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center gap-1 text-xs text-white/80">
+                      <span>🔥 Hurry up!</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Close button */}
@@ -262,7 +297,7 @@ export default function Hero() {
                 onClick={() => setShowPromo(false)}
                 className="relative flex-shrink-0 text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -273,14 +308,29 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Floating icons around promo */}
-            <div className="absolute -top-6 left-1/4 text-2xl animate-float-icon">⚡</div>
-            <div className="absolute -bottom-4 right-1/3 text-xl animate-float-icon animation-delay-1000">✨</div>
+            {/* Floating icons around promo - disabled on mobile */}
+            {!isMobile && (
+              <>
+                <div className="absolute -top-6 left-1/4 text-2xl animate-float-icon">⚡</div>
+                <div className="absolute -bottom-4 right-1/3 text-xl animate-float-icon animation-delay-1000">✨</div>
+              </>
+            )}
           </div>
         </div>
       </div>
     );
-  };
+  }, [showPromo, promoMessage, isMobile]);
+
+  // Stats data
+  const stats = useMemo(() => isMobile ? [
+    { label: 'Projects', value: '150+' },
+    { label: 'Students', value: '500+' },
+  ] : [
+    { label: 'Projects', value: '150+' },
+    { label: 'Students', value: '500+' },
+    { label: 'Categories', value: '12' },
+    { label: 'Reviews', value: '4.9★' },
+  ], [isMobile]);
 
   return (
     <section
@@ -290,42 +340,54 @@ export default function Hero() {
       {/* Promo Popup */}
       <PromoPopup />
 
-      {/* Particle Canvas */}
+      {/* Particle Canvas - optimized for mobile */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
       />
 
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 animate-gradient-xy"></div>
+      {/* Animated gradient background - simplified on mobile */}
+      <div className={`absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 ${!isMobile ? 'animate-gradient-xy' : ''}`}></div>
 
-      {/* Glowing orbs with 3D transform */}
-      <div
-        className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"
-        style={{
-          transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20}px)`,
-          transition: 'transform 0.1s ease-out',
-        }}
-      />
-      <div
-        className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-2000"
-        style={{
-          transform: `translate(${-mousePosition.x * 20}px, ${-mousePosition.y * 20}px)`,
-          transition: 'transform 0.1s ease-out',
-        }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-4000"
-        style={{
-          transform: `translate(${mousePosition.x * 15}px, ${mousePosition.y * 15}px)`,
-          transition: 'transform 0.1s ease-out',
-        }}
-      />
+      {/* Glowing orbs - disabled or simplified on mobile */}
+      {!isMobile ? (
+        <>
+          <div
+            className="absolute top-20 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"
+            style={{
+              transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20}px)`,
+              transition: 'transform 0.1s ease-out',
+            }}
+          />
+          <div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-2000"
+            style={{
+              transform: `translate(${-mousePosition.x * 20}px, ${-mousePosition.y * 20}px)`,
+              transition: 'transform 0.1s ease-out',
+            }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-4000"
+            style={{
+              transform: `translate(${mousePosition.x * 15}px, ${mousePosition.y * 15}px)`,
+              transition: 'transform 0.1s ease-out',
+            }}
+          />
+        </>
+      ) : (
+        // Simplified mobile version
+        <>
+          <div className="absolute top-10 left-10 w-48 h-48 bg-blue-500/20 rounded-full filter blur-3xl opacity-30"></div>
+          <div className="absolute bottom-10 right-10 w-48 h-48 bg-purple-500/20 rounded-full filter blur-3xl opacity-30"></div>
+        </>
+      )}
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"></div>
+      {/* Grid pattern overlay - hidden on mobile */}
+      {!isMobile && (
+        <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"></div>
+      )}
 
-      {/* Floating icons */}
+      {/* Floating icons - only on desktop */}
       {floatingIcons.map(({ Icon, delay, x, y }, index) => (
         <div
           key={index}
@@ -343,98 +405,105 @@ export default function Hero() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center">
-          {/* Animated badge */}
-          <div className="inline-block mb-8 animate-fade-in">
-            <div className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 backdrop-blur-sm">
-              <span className="text-sm font-medium text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text">
-                🚀 500+ Students Trust Us
+          {/* Animated badge - simplified on mobile */}
+          <div className={`inline-block mb-4 md:mb-8 ${!isMobile ? 'animate-fade-in' : ''}`}>
+            <div className="px-2 md:px-4 py-1 md:py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 backdrop-blur-sm">
+              <span className={`${isMobile ? 'text-[10px]' : 'text-sm'} font-medium text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text`}>
+                {isMobile ? '🚀 500+ Students' : '🚀 500+ Students Trust Us'}
               </span>
             </div>
           </div>
 
-          {/* Main heading with gradient animation */}
-          <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold mb-6 animate-fade-in-up">
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient-x">
+          {/* Main heading - responsive */}
+          <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-7xl lg:text-8xl'} font-bold mb-3 md:mb-6 ${!isMobile ? 'animate-fade-in-up' : ''}`}>
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Final Year Projects
             </span>
             <br />
             <span className="text-white relative">
               Marketplace
-              <span className="absolute -top-6 -right-6 text-yellow-400 animate-bounce">
-                ✨
-              </span>
+              {!isMobile && (
+                <span className="absolute -top-6 -right-6 text-yellow-400 animate-bounce">
+                  ✨
+                </span>
+              )}
             </span>
           </h1>
 
           {/* Description */}
-          <div className="relative max-w-3xl mx-auto mb-8">
-            <p className="text-lg md:text-xl text-white/80 font-light leading-relaxed animate-fade-in-up animation-delay-200">
-              Download ready-made AI, ML, and Web Development projects
-              <br className="hidden sm:block" />
-              Complete with documentation, source code, and presentations — at affordable prices!
+          <div className="relative max-w-3xl mx-auto mb-4 md:mb-8">
+            <p className={`${isMobile ? 'text-sm' : 'text-lg md:text-xl'} text-white/80 font-light leading-relaxed`}>
+              {isMobile ? (
+                <>Download ready-made AI, ML, and Web Development projects with documentation</>
+              ) : (
+                <>
+                  Download ready-made AI, ML, and Web Development projects
+                  <br className="hidden sm:block" />
+                  Complete with documentation, source code, and presentations — at affordable prices!
+                </>
+              )}
             </p>
           </div>
 
-          {/* CTA Buttons with 3D effect */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animation-delay-400">
+          {/* CTA Buttons - responsive */}
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
             <Link
               to="/projects"
-              className="group relative px-8 py-4 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              className={`group relative px-4 md:px-8 py-2.5 md:py-4 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl ${isMobile ? 'w-full max-w-xs' : ''}`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <span className="relative flex items-center gap-2 z-10">
+              <span className={`relative flex items-center justify-center gap-1 md:gap-2 z-10 ${isMobile ? 'text-sm' : ''}`}>
                 Browse Projects
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className={`w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform`} />
               </span>
             </Link>
 
-            <a
-              href="#categories"
-              className="relative px-8 py-4 rounded-xl font-semibold text-white border-2 border-white/30 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-white/5 backdrop-blur-sm group"
-            >
-              <span className="relative z-10">Explore Categories</span>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </a>
+            {!isMobile && (
+              <a
+                href="#categories"
+                className="relative px-8 py-4 rounded-xl font-semibold text-white border-2 border-white/30 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-white/5 backdrop-blur-sm group"
+              >
+                <span className="relative z-10">Explore Categories</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+            )}
           </div>
 
-          {/* Stats with counter animation */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
-            {[
-              { label: 'Projects', value: '150+' },
-              { label: 'Students', value: '500+' },
-              { label: 'Categories', value: '12' },
-              { label: 'Reviews', value: '4.9★' },
-            ].map((stat, index) => (
+          {/* Stats - responsive */}
+          <div className={`mt-8 md:mt-16 grid grid-cols-${isMobile ? '2' : '2 md:grid-cols-4'} gap-3 md:gap-6 max-w-3xl mx-auto`}>
+            {stats.map((stat, index) => (
               <div
                 key={index}
-                className="group relative p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:scale-105 hover:bg-white/10"
+                className="group relative p-2 md:p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:scale-105 hover:bg-white/10"
               >
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:to-pink-500/10 transition-all duration-300"></div>
                 <div className="relative z-10">
-                  <div className="text-2xl md:text-3xl font-bold text-white">{stat.value}</div>
-                  <div className="text-sm text-white/60">{stat.label}</div>
+                  <div className={`${isMobile ? 'text-lg' : 'text-2xl md:text-3xl'} font-bold text-white`}>{stat.value}</div>
+                  <div className={`${isMobile ? 'text-[10px]' : 'text-sm'} text-white/60`}>{stat.label}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Trust indicators */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-white/50 animate-fade-in animation-delay-800">
-            <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span>Trusted by 500+ Students</span>
+          {/* Trust indicators - hidden on mobile */}
+          {!isMobile && (
+            <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-white/50 animate-fade-in animation-delay-800">
+              <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span>Trusted by 500+ Students</span>
+              </div>
+              <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse animation-delay-200"></div>
+                <span>Affordable Pricing</span>
+              </div>
+              <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse animation-delay-400"></div>
+                <span>Ready-to-Submit Projects</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse animation-delay-200"></div>
-              <span>Affordable Pricing</span>
-            </div>
-            <div className="flex items-center gap-2 group hover:text-white/80 transition-colors">
-              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse animation-delay-400"></div>
-              <span>Ready-to-Submit Projects</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>
