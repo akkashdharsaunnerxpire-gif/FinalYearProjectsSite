@@ -1,16 +1,20 @@
 import Hero from '../Components/Hero';
 import CategoryCards from '../Components/CategoryCards';
-import { useEffect, useRef, useState } from 'react';
-import { Sparkles,  Award, Users, TrendingUp, Star, ChevronDown, ArrowUp } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Sparkles, Award, Users, TrendingUp, Star, ChevronDown, ArrowUp } from 'lucide-react';
+import { useTheme } from '../Context/ThemeContext'; // Theme integration
 
 export default function HomePage() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Advanced particle system for background
+  // Advanced Theme-Aware Interactive Canvas Particle System
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -18,12 +22,14 @@ export default function HomePage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
 
-    // Star particles
-    const particles: any[] = [];
-    const connections: any[] = [];
+    const particles: Particle[] = [];
+    const particleCount = window.innerWidth < 768 ? 40 : 75; // Mobile Performance Optimization
 
     class Particle {
       x: number;
@@ -39,22 +45,27 @@ export default function HomePage() {
       constructor() {
         this.x = Math.random() * canvas!.width;
         this.y = Math.random() * canvas!.height;
-        this.size = Math.random() * 3 + 1;
-        this.speedX = (Math.random() - 0.5) * 0.3;
-        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 2.5 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
         this.opacity = Math.random() * 0.5 + 0.3;
         this.pulseSpeed = Math.random() * 0.02 + 0.01;
         this.pulseOffset = Math.random() * Math.PI * 2;
-        const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#F59E0B'];
+        
+        // Dynamic Palette based on Theme
+        const lightColors = ['#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#6366F1'];
+        const darkColors = ['#60A5FA', '#A78BFA', '#F472B6', '#22D3EE', '#818CF8'];
+        const colors = isLight ? lightColors : darkColors;
         this.color = colors[Math.floor(Math.random() * colors.length)];
       }
 
       update(time: number) {
         this.x += this.speedX;
         this.y += this.speedY;
-        this.size += Math.sin(time * this.pulseSpeed + this.pulseOffset) * 0.02;
-        this.size = Math.max(0.5, Math.min(4, this.size));
-if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
+        this.size += Math.sin(time * this.pulseSpeed + this.pulseOffset) * 0.015;
+        this.size = Math.max(0.8, Math.min(3.5, this.size));
+
+        if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
         if (this.y < 0 || this.y > canvas!.height) this.speedY *= -1;
       }
 
@@ -65,85 +76,62 @@ if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
         ctx.fillStyle = this.color;
         ctx.globalAlpha = this.opacity * pulse;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
       }
     }
 
-    // Create particles
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
     }
 
-    // Connection lines
-    class Connection {
-      p1: Particle;
-      p2: Particle;
-      maxDist: number;
-
-      constructor(p1: Particle, p2: Particle) {
-        this.p1 = p1;
-        this.p2 = p2;
-        this.maxDist = 150;
-      }
-
-      draw(ctx: CanvasRenderingContext2D) {
-        const dx = this.p1.x - this.p2.x;
-        const dy = this.p1.y - this.p2.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < this.maxDist) {
-          const opacity = (1 - dist / this.maxDist) * 0.15;
-          ctx.beginPath();
-          ctx.moveTo(this.p1.x, this.p1.y);
-          ctx.lineTo(this.p2.x, this.p2.y);
-          ctx.strokeStyle = '#8B5CF6';
-          ctx.globalAlpha = opacity;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-        }
-      }
-    }
-
-    // Create connections
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        connections.push(new Connection(particles[i], particles[j]));
-      }
-    }
-
-    // Scroll-based glow effect
     let glowIntensity = 0;
 
     const animate = (time: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update glow intensity based on scroll
-      glowIntensity += (scrollProgress - glowIntensity) * 0.02;
+      glowIntensity += (scrollProgress - glowIntensity) * 0.05;
 
-      // Draw connections
-      connections.forEach(conn => conn.draw(ctx));
+      // Draw particle connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Draw particles
-      particles.forEach(p => {
+          if (dist < 120) {
+            const opacity = (1 - dist / 120) * (isLight ? 0.12 : 0.18);
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = isLight ? '#8B5CF6' : '#A78BFA';
+            ctx.globalAlpha = opacity;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+
+      // Update & Draw Particles
+      particles.forEach((p) => {
         p.update(time);
         p.draw(ctx, time);
       });
 
-      // Draw central glow based on scroll
+      // Scroll-triggered dynamic glow center
       const gradient = ctx.createRadialGradient(
         canvas.width / 2,
         canvas.height / 2,
         0,
         canvas.width / 2,
         canvas.height / 2,
-        canvas.width * 0.5
+        canvas.width * 0.4
       );
-      gradient.addColorStop(0, `rgba(139, 92, 246, ${0.05 * glowIntensity})`);
-      gradient.addColorStop(0.5, `rgba(59, 130, 246, ${0.03 * glowIntensity})`);
+      gradient.addColorStop(0, `rgba(139, 92, 246, ${0.06 * glowIntensity})`);
+      gradient.addColorStop(0.5, `rgba(59, 130, 246, ${0.04 * glowIntensity})`);
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -153,50 +141,48 @@ if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
 
     animate(0);
 
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', resizeCanvas);
     };
-  }, [scrollProgress]);
+  }, [scrollProgress, isLight]);
 
-  // Scroll progress tracking
+  // Scroll Progress Tracking & Throttling
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       const progress = maxScroll > 0 ? scrollY / maxScroll : 0;
       setScrollProgress(progress);
-      setIsVisible(scrollY > 100);
+      setIsVisible(scrollY > 150);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Floating scroll indicator cards
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Interactive Floating Progress Widgets
   const FloatingProgressCards = () => {
     const stats = [
-      { icon: Users, label: 'Students', value: '500+', color: 'from-blue-500 to-blue-600' },
-      { icon: Award, label: 'Projects', value: '150+', color: 'from-purple-500 to-purple-600' },
-      { icon: Star, label: 'Rating', value: '4.9★', color: 'from-yellow-500 to-yellow-600' },
-      { icon: TrendingUp, label: 'Growth', value: '200%', color: 'from-green-500 to-green-600' },
+      { icon: Users, label: 'Students', value: '500+', color: 'from-blue-500 to-indigo-600' },
+      { icon: Award, label: 'Projects', value: '150+', color: 'from-purple-500 to-pink-600' },
+      { icon: Star, label: 'Rating', value: '4.9★', color: 'from-amber-400 to-orange-500' },
+      { icon: TrendingUp, label: 'Growth', value: '200%', color: 'from-emerald-400 to-teal-600' },
     ];
 
-    // Calculate which card is active based on scroll
     const activeIndex = Math.min(Math.floor(scrollProgress * stats.length), stats.length - 1);
 
     return (
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-40 hidden xl:block">
-        <div className="flex flex-col gap-3">
+      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-40 hidden xl:block">
+        <div className="flex flex-col gap-3.5">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             const isActive = index === activeIndex;
@@ -206,49 +192,60 @@ if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
               <div
                 key={index}
                 className={`
-                  relative group transition-all duration-700
-                  ${isActive ? 'scale-110' : 'scale-90'}
-                  ${isPassed ? 'opacity-40' : 'opacity-100'}
+                  relative group transition-all duration-500 transform
+                  ${isActive ? 'scale-110 translate-x-0' : 'scale-90 hover:scale-100 hover:translate-x-1'}
+                  ${isPassed ? 'opacity-60' : 'opacity-100'}
                 `}
               >
-                <div className={`
-                  relative p-3 rounded-xl backdrop-blur-sm border transition-all duration-500
-                  ${isActive 
-                    ? `bg-gradient-to-br ${stat.color} border-white/30 shadow-2xl shadow-purple-500/20` 
-                    : 'bg-white/10 dark:bg-gray-900/40 border-white/10 hover:border-purple-500/30'
-                  }
-                `}>
-                  <div className="flex flex-col items-center gap-1">
-                    <Icon className={`
-                      w-5 h-5 transition-all duration-500
-                      ${isActive ? 'text-white scale-110' : 'text-gray-400 group-hover:text-purple-400'}
-                    `} />
-                    <span className={`
-                      text-[10px] font-bold transition-all duration-500
-                      ${isActive ? 'text-white' : 'text-gray-500'}
-                    `}>
+                <div
+                  className={`
+                    relative p-3 rounded-2xl backdrop-blur-md border transition-all duration-500 shadow-lg
+                    ${
+                      isActive
+                        ? `bg-gradient-to-br ${stat.color} border-white/40 shadow-purple-500/30 ring-2 ring-purple-400/50`
+                        : 'bg-white/70 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800'
+                    }
+                  `}
+                >
+                  <div className="flex flex-col items-center gap-1 min-w-[50px]">
+                    <Icon
+                      className={`
+                        w-5 h-5 transition-all duration-500
+                        ${isActive ? 'text-white scale-110 animate-bounce' : 'text-slate-500 dark:text-slate-400 group-hover:text-purple-500'}
+                      `}
+                    />
+                    <span
+                      className={`
+                        text-xs font-black tracking-wide transition-all duration-300
+                        ${isActive ? 'text-white' : 'text-slate-800 dark:text-slate-200'}
+                      `}
+                    >
                       {stat.value}
                     </span>
-                    <span className={`
-                      text-[8px] font-medium transition-all duration-500
-                      ${isActive ? 'text-white/80' : 'text-gray-400'}
-                    `}>
+                    <span
+                      className={`
+                        text-[9px] font-semibold uppercase tracking-wider transition-all duration-300
+                        ${isActive ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'}
+                      `}
+                    >
                       {stat.label}
                     </span>
                   </div>
 
-                  {/* Active glow */}
+                  {/* Active Indicator Pulse Ring */}
                   {isActive && (
-                    <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-xl animate-pulse"></div>
+                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/30 to-purple-500/30 blur-md -z-10 animate-pulse" />
                   )}
                 </div>
 
-                {/* Connecting line */}
+                {/* Vertical Progress Line */}
                 {index < stats.length - 1 && (
-                  <div className={`
-                    w-0.5 h-2 mx-auto transition-all duration-700
-                    ${isPassed ? 'bg-purple-500/50' : 'bg-gray-600/30'}
-                  `}></div>
+                  <div
+                    className={`
+                      w-0.5 h-3 mx-auto transition-all duration-500 rounded-full
+                      ${isPassed ? 'bg-purple-500 shadow-sm' : 'bg-slate-300 dark:bg-slate-800'}
+                    `}
+                  />
                 )}
               </div>
             );
@@ -258,61 +255,55 @@ if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
     );
   };
 
-  // Scroll progress bar with advanced animation
-  const ProgressBar = () => {
-    return (
-      <div className="fixed left-0 top-0 z-50 w-1 h-full bg-gradient-to-b from-transparent via-purple-500/20 to-transparent">
-        <div 
-          className="w-full bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300"
-          style={{ 
-            height: `${scrollProgress * 100}%`,
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)'
-          }}
-        >
-          <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-purple-500 shadow-lg shadow-purple-500/50 animate-pulse"></div>
-        </div>
-      </div>
-    );
-  };
+  // Top Neon Glow Scroll Progress Line
+  const ProgressBar = () => (
+    <div className="fixed left-0 top-0 z-50 w-full h-1 bg-slate-200/40 dark:bg-slate-800/40 backdrop-blur-xs">
+      <div
+        className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-150 ease-out shadow-[0_0_12px_rgba(168,85,247,0.8)]"
+        style={{ width: `${scrollProgress * 100}%` }}
+      />
+    </div>
+  );
 
-  // Animated scroll indicator
-  const ScrollIndicator = () => {
-    return (
-      <div className={`
-        fixed bottom-8 left-1/2 -translate-x-1/2 z-40 transition-all duration-700
-        ${isVisible ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'}
-      `}>
-        <div className="relative flex flex-col items-center gap-2">
-          <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/10 dark:bg-gray-900/50 backdrop-blur-xl border border-white/10 shadow-2xl">
-            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-            <span className="text-sm font-medium text-white/80">Scroll to Explore</span>
-            <ChevronDown className="w-4 h-4 text-purple-400 animate-bounce" />
-          </div>
-          
-          {/* Animated rings */}
-          <div className="absolute -inset-4 rounded-full border border-purple-500/20 animate-ping"></div>
-          <div className="absolute -inset-8 rounded-full border border-purple-500/10 animate-ping animation-delay-500"></div>
+  // Dynamic Scroll Indicator Badge
+  const ScrollIndicator = () => (
+    <div
+      className={`
+        fixed bottom-8 left-1/2 -translate-x-1/2 z-40 transition-all duration-700 transform
+        ${isVisible ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}
+      `}
+    >
+      <div className="relative flex flex-col items-center group cursor-pointer" onClick={() => window.scrollBy({ top: 400, behavior: 'smooth' })}>
+        <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-xl group-hover:scale-105 transition-all duration-300">
+          <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-spin-slow" />
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wide">
+            Scroll to Explore
+          </span>
+          <ChevronDown className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-bounce" />
         </div>
-      </div>
-    );
-  };
 
-  // Floating particles in background
+        {/* Outer Pulsing Waves */}
+        <div className="absolute -inset-2 rounded-full border border-purple-500/20 animate-ping -z-10" />
+      </div>
+    </div>
+  );
+
+  // Floating Micro Emojis Background Animation
   const FloatingElements = () => {
     const elements = ['✨', '🚀', '💻', '⚡', '🎯', '🌟', '🔥', '💡'];
-    
+
     return (
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {elements.map((el, i) => (
           <div
             key={i}
-            className="absolute text-2xl animate-float"
+            className="absolute text-xl sm:text-2xl select-none animate-float hover:scale-125 transition-transform"
             style={{
-              left: `${Math.random() * 90 + 5}%`,
-              top: `${Math.random() * 90 + 5}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${10 + Math.random() * 10}s`,
-              opacity: 0.1 + Math.random() * 0.1,
+              left: `${(i * 12 + 7) % 92}%`,
+              top: `${(i * 15 + 10) % 85}%`,
+              animationDelay: `${i * 0.7}s`,
+              animationDuration: `${12 + (i % 5) * 2}s`,
+              opacity: isLight ? 0.25 : 0.15,
             }}
           >
             {el}
@@ -322,50 +313,47 @@ if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
     );
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
-    <div ref={containerRef} className="relative min-h-screen">
-      {/* Canvas background */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-0"
-      />
+    <div ref={containerRef} className="relative min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden">
+      
+      {/* Dynamic Background Particle Canvas */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 
-      {/* Floating elements */}
+      {/* Floating Animated Emojis */}
       <FloatingElements />
 
-      {/* Progress Bar */}
+      {/* Top Progress Neon Line */}
       <ProgressBar />
 
-      {/* Floating Stats Cards */}
+      {/* Scroll Milestone Cards */}
       <FloatingProgressCards />
 
-      {/* Main content */}
-      <div className="relative z-10">
+      {/* Main Page Content */}
+      <main className="relative z-10">
         <Hero />
         <CategoryCards />
-      </div>
+      </main>
 
-      {/* Scroll Indicator */}
+      {/* Bottom Scroll Prompt */}
       <ScrollIndicator />
 
-      {/* Scroll to top button */}
+      {/* Back to Top Floating Action Button */}
       <button
         onClick={scrollToTop}
+        aria-label="Scroll to top"
         className={`
-          fixed bottom-8 right-8 z-40 p-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-2xl
-          transition-all duration-500 hover:scale-110 hover:shadow-purple-500/30
+          fixed bottom-8 right-6 sm:right-8 z-40 p-3.5 rounded-2xl 
+          bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white 
+          shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 
+          transition-all duration-500 hover:scale-110 active:scale-95 flex items-center justify-center
           ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}
         `}
       >
-        <ArrowUp className="w-5 h-5" />
+        <ArrowUp className="w-5 h-5 animate-pulse" />
       </button>
 
-      {/* Bottom gradient */}
-      <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-500/5 to-transparent pointer-events-none z-0"></div>
+      {/* Glow Overlay At Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-purple-500/10 via-purple-500/5 to-transparent pointer-events-none z-0" />
     </div>
   );
 }

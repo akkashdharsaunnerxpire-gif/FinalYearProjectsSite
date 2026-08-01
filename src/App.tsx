@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 
+
 function App() {
   return (
     <BrowserRouter>

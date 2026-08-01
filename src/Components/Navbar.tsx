@@ -1,491 +1,408 @@
-import { Link } from 'react-router-dom';
-import { GraduationCap, Menu, X, Sparkles, Rocket, Award, Users, Laptop, Moon, Sun, Code } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '../Context/ThemeContext';
+import { Menu, X, Music, VolumeX } from 'lucide-react';
 
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
-  const [promoMessage, setPromoMessage] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [studentAnimation, setStudentAnimation] = useState('idle');
-  const promoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const promoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-const studentIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+export const Navbar: React.FC = () => {
+  const { isLightOn, toggleTheme } = useTheme(); 
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [bgMusicEnabled, setBgMusicEnabled] = useState(true);
+  const [isSmallScreen, setIsSmallScreen] = useState(false); // 📱 Small Screen Check
+  const [pullAmount, setPullAmount] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Promo messages with laptop/student theme
-  const promoMessages = [
-    { icon: '💻', text: 'Student Special: Get 30% OFF on AI Projects!' },
-    { icon: '🎓', text: 'Final Year Projects starting at just ₹1500!' },
-    { icon: '🚀', text: 'Premium Web Dev Projects with Source Code!' },
-    { icon: '🧠', text: 'ML Projects with Complete Documentation!' },
-    { icon: '🌟', text: 'Limited Time: project Ready within 3days!' },
-    { icon: '📚', text: 'Top Rated Projects by 500+ Students!' },
-  ];
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const isPlayingRef = useRef<boolean>(false);
+  const musicTimerRef = useRef<number | null>(null);
 
-  // Show promo animation every 1 MINUTE (60 seconds)
+  const isDraggingRef = useRef(false);
+  const startYRef = useRef(0);
+  const hasTriggeredRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
+
+  const REST_LENGTH = 95;
+  const BEAD_COUNT = 10;
+  const PULL_THRESHOLD = 30;
+
+  // 📱 Detect Screen Size (Strictly Width Based)
   useEffect(() => {
-    const showPromoWithMessage = () => {
-      const randomMessage = promoMessages[Math.floor(Math.random() * promoMessages.length)];
-      setPromoMessage(`${randomMessage.icon} ${randomMessage.text}`);
-      setShowPromo(true);
-      
-      if (promoTimeoutRef.current) {
-        clearTimeout(promoTimeoutRef.current);
+    const checkScreenSize = () => {
+      // 768px-க்கு குறைவாக இருந்தால் Small Screen / Mobile எனக் கருதுவோம்
+      const small = window.innerWidth < 768;
+      setIsSmallScreen(small);
+      if (small) {
+        stopBackgroundMusic(); // Small screen-ல் BGM ஆட்டோமேட்டிக்காக நிறுத்தப்படும்
       }
-      
-      // Hide promo after 5 seconds
-      promoTimeoutRef.current = setTimeout(() => {
-        setShowPromo(false);
-      }, 10000);
     };
 
-    // Show initial promo after 3 seconds
-    const initialTimeout = setTimeout(() => {
-      showPromoWithMessage();
-    }, 3000);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
-    // Set interval for every 60 seconds (1 minute)
-    promoIntervalRef.current = setInterval(() => {
-      showPromoWithMessage();
-    }, 100000); // 60 seconds = 1 minute
+  const initAudio = () => {
+    if (!audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtxRef.current = new AudioCtx();
+    }
+  };
+
+  // 🎹 Synth Piano Note Generator
+  const playSynthNote = (freq: number, duration: number = 0.3) => {
+    const ctx = audioCtxRef.current;
+    if (!ctx || !isPlayingRef.current) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  };
+
+  // 🎵 Coldplay - "A Sky Full of Stars" Melody Sequence
+  const startSkyFullOfStarsBGM = () => {
+    // Small Screens / Mobile-ல் BGM ஸ்டார்ட் ஆகாது!
+    if (window.innerWidth < 768) return;
+
+    initAudio();
+    if (isPlayingRef.current) return;
+    isPlayingRef.current = true;
+    setBgMusicEnabled(true);
+
+    const B4 = 493.88, Csharp5 = 554.37, Dsharp5 = 622.25, Fsharp5 = 739.99, Gsharp5 = 830.61;
+
+    const melody = [
+      { note: Dsharp5, time: 0, duration: 0.35 },
+      { note: Fsharp5, time: 300, duration: 0.35 },
+      { note: Gsharp5, time: 600, duration: 0.4 },
+      { note: Dsharp5, time: 1000, duration: 0.35 },
+      { note: Fsharp5, time: 1300, duration: 0.35 },
+      { note: Gsharp5, time: 1600, duration: 0.4 },
+      
+      { note: Csharp5, time: 2000, duration: 0.35 },
+      { note: Dsharp5, time: 2300, duration: 0.35 },
+      { note: Fsharp5, time: 2600, duration: 0.4 },
+      { note: B4, time: 3000, duration: 0.35 },
+      { note: Csharp5, time: 3300, duration: 0.35 },
+      { note: Dsharp5, time: 3600, duration: 0.5 }
+    ];
+
+    const totalLoopTime = 4200;
+
+    const runSequence = () => {
+      if (!isPlayingRef.current) return;
+
+      melody.forEach((item) => {
+        window.setTimeout(() => {
+          if (isPlayingRef.current) {
+            playSynthNote(item.note, item.duration);
+          }
+        }, item.time);
+      });
+
+      musicTimerRef.current = window.setTimeout(() => {
+        if (isPlayingRef.current) {
+          runSequence();
+        }
+      }, totalLoopTime);
+    };
+
+    runSequence();
+  };
+
+  const stopBackgroundMusic = () => {
+    isPlayingRef.current = false;
+    if (musicTimerRef.current !== null) {
+      clearTimeout(musicTimerRef.current);
+    }
+    setBgMusicEnabled(false);
+  };
+
+  useEffect(() => {
+    if (isSmallScreen) return; // Small screen என்றால் interaction event-களை சேர்க்க வேண்டாம்
+
+    const handleUserInteraction = () => {
+      startSkyFullOfStarsBGM();
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('scroll', handleUserInteraction);
+      window.removeEventListener('touchstart', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+    };
+
+    window.addEventListener('click', handleUserInteraction);
+    window.addEventListener('scroll', handleUserInteraction);
+    window.addEventListener('touchstart', handleUserInteraction);
+    window.addEventListener('keydown', handleUserInteraction);
+
+    startSkyFullOfStarsBGM();
 
     return () => {
-      clearTimeout(initialTimeout);
-      if (promoIntervalRef.current) {
-        clearInterval(promoIntervalRef.current);
-      }
-      if (promoTimeoutRef.current) {
-        clearTimeout(promoTimeoutRef.current);
-      }
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('scroll', handleUserInteraction);
+      window.removeEventListener('touchstart', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
     };
-  }, []);
+  }, [isSmallScreen]);
 
-  // Student animation sequence
-  useEffect(() => {
-    const animateStudent = () => {
-      setStudentAnimation('swinging');
-      setTimeout(() => setStudentAnimation('idle'), 2000);
-      setTimeout(() => setStudentAnimation('thinking'), 3000);
-      setTimeout(() => setStudentAnimation('idle'), 4500);
-      setTimeout(() => setStudentAnimation('coding'), 5000);
-      setTimeout(() => setStudentAnimation('idle'), 6500);
-    };
-
-    studentIntervalRef.current = setInterval(animateStudent, 8000);
-    animateStudent();
-
-    return () => {
-      if (studentIntervalRef.current) {
-        clearInterval(studentIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+  const toggleBackgroundMusic = () => {
+    if (bgMusicEnabled) {
+      stopBackgroundMusic();
+    } else {
+      startSkyFullOfStarsBGM();
+    }
   };
 
-  // Student sitting on navbar component
-  const StudentSitting = () => {
-    const getStudentEmoji = () => {
-      switch(studentAnimation) {
-        case 'swinging': return '🦸‍♂️';
-        case 'thinking': return '🤔';
-        case 'coding': return '👨‍💻';
-        default: return '🧑‍🎓';
-      }
-    };
+  const playSound = (type: 'click' | 'release') => {
+    if (!soundEnabled) return;
+    initAudio();
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
 
-    const getLegAnimation = () => {
-      switch(studentAnimation) {
-        case 'swinging': return 'animate-leg-swing';
-        case 'thinking': return 'animate-leg-think';
-        case 'coding': return 'animate-leg-code';
-        default: return 'animate-leg-idle';
-      }
-    };
+    if (ctx.state === 'suspended') ctx.resume();
 
-    return (
-      <div className="absolute -right-8 top-1/2 -translate-y-1/2 hidden xl:block z-40">
-        <div className="relative">
-          {/* Student body with floating animation */}
-          <div className={`relative animate-float-student ${studentAnimation === 'coding' ? 'animate-code-typing' : ''}`}>
-            {/* Student body */}
-            <div className="relative bg-gradient-to-b from-blue-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-3 border border-white/20 shadow-2xl">
-              {/* Student avatar with animation */}
-              <div className="relative">
-                <div className="text-5xl transform transition-all duration-500 hover:scale-110">
-                  {getStudentEmoji()}
-                </div>
-                
-                {/* Thought bubble */}
-                {studentAnimation === 'thinking' && (
-                  <div className="absolute -top-12 -right-8 animate-thought-bubble">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl px-3 py-1.5 shadow-xl border border-gray-200 dark:border-gray-700">
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-yellow-500" />
-                        Great Projects!
-                      </span>
-                    </div>
-                    <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white dark:bg-gray-800 transform rotate-45 border-r border-b border-gray-200 dark:border-gray-700"></div>
-                  </div>
-                )}
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-                {/* Coding animation */}
-                {studentAnimation === 'coding' && (
-                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 animate-code-lines">
-                    <div className="flex gap-1">
-                      <div className="w-1 h-4 bg-green-400 rounded-full animate-code-line"></div>
-                      <div className="w-1 h-6 bg-blue-400 rounded-full animate-code-line animation-delay-200"></div>
-                      <div className="w-1 h-3 bg-purple-400 rounded-full animate-code-line animation-delay-400"></div>
-                      <div className="w-1 h-5 bg-pink-400 rounded-full animate-code-line animation-delay-600"></div>
-                    </div>
-                  </div>
-                )}
-              </div>
+    if (type === 'click') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+    } else {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.06);
+    }
 
-              {/* Student info */}
-              <div className="text-center mt-1">
-                <div className="text-[10px] font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 rounded-full">
-                  Student
-                </div>
-              </div>
-            </div>
-
-            {/* Dangling legs */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-              {/* Left leg */}
-              <div className={`relative ${getLegAnimation()}`}>
-                <div className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-b-full"></div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-2.5 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"></div>
-              </div>
-              {/* Right leg */}
-              <div className={`relative ${getLegAnimation()} animation-delay-300`}>
-                <div className="w-1.5 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-b-full"></div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-2.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
-              </div>
-            </div>
-
-            {/* Floating particles around student */}
-            <div className="absolute -top-4 -left-4 text-lg animate-float-particle">✨</div>
-            <div className="absolute -bottom-2 -right-4 text-lg animate-float-particle animation-delay-1000">💻</div>
-            <div className="absolute top-0 -right-6 text-lg animate-float-particle animation-delay-2000">📚</div>
-          </div>
-
-          {/* Laptop on the side */}
-          <div className="absolute -bottom-4 -left-12 transform rotate-12 animate-float-laptop">
-            <div className="relative">
-              <div className="w-12 h-9 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg p-1 shadow-xl">
-                <div className="w-full h-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded flex items-center justify-center">
-                  <Code className="w-4 h-4 text-white/60 animate-pulse" />
-                </div>
-              </div>
-              <div className="w-14 h-1 bg-gradient-to-r from-gray-600 to-gray-800 mx-auto rounded-b"></div>
-              {/* Screen glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg blur-md"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + (type === 'click' ? 0.04 : 0.06));
   };
 
-  // Student laptop promo component
-  const StudentLaptopPromo = () => {
-    if (!showPromo) return null;
-
-    return (
-      <div className="absolute top-full left-0 right-0 mt-2 animate-promo-slide z-50">
-        <div className="relative max-w-2xl mx-auto px-4">
-          <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-4 overflow-hidden">
-            {/* Animated background particles */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float"></div>
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-float animation-delay-2000"></div>
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-1 h-1 bg-white/20 rounded-full animate-particle"
-                  style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    animationDelay: `${i * 0.3}s`,
-                    animationDuration: `${2 + Math.random() * 2}s`,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Laptop with student animation */}
-            <div className="relative flex items-center gap-4">
-              {/* Animated laptop icon */}
-              <div className="relative flex-shrink-0">
-                <div className="relative w-16 h-16 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center animate-float-laptop">
-                  <Laptop className="w-10 h-10 text-white" />
-                  <div className="absolute -top-1 -right-1">
-                    <div className="relative">
-                      <div className="w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-                      <div className="absolute top-0 left-0 w-3 h-3 bg-green-400 rounded-full"></div>
-                    </div>
-                  </div>
-                  {/* Student emoji floating around */}
-                  <div className="absolute -top-6 -right-6 text-2xl animate-bounce-slow">👨‍🎓</div>
-                  <div className="absolute -bottom-4 -left-4 text-xl animate-bounce-slow animation-delay-1000">📚</div>
-                </div>
-              </div>
-
-              {/* Promo message */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold text-yellow-300 bg-yellow-500/20 px-2 py-0.5 rounded-full animate-pulse-glow">
-                    ⭐ SPECIAL OFFER
-                  </span>
-                  <span className="text-xs text-white/60 flex items-center gap-1">
-                    <Users className="w-3 h-3" />
-                    500+ Students Joined
-                  </span>
-                </div>
-                <p className="text-white font-semibold text-sm md:text-base truncate">
-                  {promoMessage}
-                </p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1 text-xs text-white/80">
-                    <Award className="w-3 h-3 text-yellow-300" />
-                    <span>Trusted by Students</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-white/80">
-                    <Rocket className="w-3 h-3 text-yellow-300" />
-                    <span>Limited Time</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Close button */}
-              <button
-                onClick={() => setShowPromo(false)}
-                className="relative flex-shrink-0 text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              {/* Progress bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20">
-                <div className="h-full bg-white rounded-full animate-progress-shrink"></div>
-              </div>
-            </div>
-
-            {/* Floating icons around promo */}
-            <div className="absolute -top-8 left-1/4 text-3xl animate-float-icon">⚡</div>
-            <div className="absolute -bottom-6 right-1/3 text-2xl animate-float-icon animation-delay-1000">✨</div>
-            <div className="absolute top-1/2 -right-4 text-2xl animate-float-icon animation-delay-2000">💡</div>
-          </div>
-        </div>
-      </div>
-    );
+  const springRelease = (current: number) => {
+    const pull = current * 0.65;
+    if (pull < 0.5) {
+      setPullAmount(0);
+      setIsDragging(false);
+    } else {
+      setPullAmount(pull);
+      animationFrameRef.current = requestAnimationFrame(() => springRelease(pull));
+    }
   };
+
+  const handleToggle = () => {
+    toggleTheme();
+    playSound('click');
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    startYRef.current = e.clientY;
+    hasTriggeredRef.current = false;
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    initAudio();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    const deltaY = e.clientY - startYRef.current;
+    if (deltaY > 0) {
+      const cappedPull = Math.min(deltaY, 50);
+      setPullAmount(cappedPull);
+
+      if (cappedPull >= PULL_THRESHOLD && !hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        handleToggle();
+      }
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    if (pullAmount < 10 && !hasTriggeredRef.current) {
+      handleToggle();
+    }
+
+    playSound('release');
+    springRelease(pullAmount);
+  };
+
+  const totalLength = REST_LENGTH + pullAmount;
+  const beadSpacing = totalLength / BEAD_COUNT;
+  const beads = Array.from({ length: BEAD_COUNT - 1 }, (_, i) => i + 1);
 
   return (
-    <nav className={`
-      sticky top-0 z-50 transition-all duration-500
-      ${isScrolled 
-        ? 'bg-white/95 dark:bg-gray-900/95 shadow-lg backdrop-blur-xl' 
-        : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md'
-      }
-      border-b border-gray-200/20 dark:border-gray-700/20
-    `}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 relative">
-          {/* Logo with animation */}
-          <Link to="/" className="flex items-center space-x-2 group relative z-10">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-md group-hover:blur-xl transition-all duration-300"></div>
-              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg group-hover:scale-110 transition-all duration-300 group-hover:rotate-6">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
+    <nav
+      className={`w-full transition-colors duration-500 border-b relative z-50 px-4 sm:px-8 h-16 flex items-center justify-between overflow-visible ${
+        isLightOn
+          ? 'bg-white/90 border-slate-200 text-slate-900 shadow-sm backdrop-blur-md'
+          : 'bg-[#0f172a]/90 border-slate-800 text-white shadow-md backdrop-blur-md'
+      }`}
+    >
+      <style>{`
+        @keyframes chainDance {
+          0% { transform: rotate(0deg); }
+          20% { transform: rotate(4deg); }
+          40% { transform: rotate(-3deg); }
+          60% { transform: rotate(2deg); }
+          80% { transform: rotate(-1deg); }
+          100% { transform: rotate(0deg); }
+        }
+        .animate-chain-dance {
+          animation: chainDance 3s ease-in-out infinite;
+          transform-origin: 20px 0px;
+        }
+      `}</style>
+
+      {/* Brand Logo & Mobile Menu Icon */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          aria-label="Toggle Navigation"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
+        <span className="font-extrabold text-lg sm:text-xl tracking-tight text-amber-500">
+          Project<span className={isLightOn ? 'text-slate-900' : 'text-white'}>Site</span>
+        </span>
+      </div>
+
+      {/* Desktop Navigation Links */}
+      <div className="hidden md:flex items-center gap-8 font-medium text-sm">
+        <a href="/" className="hover:text-amber-500 transition-colors">Home</a>
+        <a href="#categories" className="hover:text-amber-500 transition-colors">Categories</a>
+        <a href="/projects" className="hover:text-amber-500 transition-colors">Projects</a>
+        <a href="#payment" className="hover:text-amber-500 transition-colors">Payment</a>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center gap-2 sm:gap-4 relative h-full">
+        {/* 💻 Laptop/Desktop Only BGM Button (`!isSmallScreen`) */}
+        {!isSmallScreen && (
+          <button
+            onClick={toggleBackgroundMusic}
+            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition font-medium ${
+              bgMusicEnabled
+                ? 'bg-amber-500/20 border-amber-500 text-amber-500 animate-pulse'
+                : isLightOn
+                ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700'
+            }`}
+            title="Toggle Sky Full of Stars BGM"
+          >
+            {bgMusicEnabled ? <Music className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span>{bgMusicEnabled ? '✨ Coldplay BGM' : '🎵 Music Off'}</span>
+          </button>
+        )}
+
+        {/* UI Sound Button */}
+        <button
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          className={`text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border transition font-medium ${
+            isLightOn
+              ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+              : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700'
+          }`}
+        >
+          {soundEnabled ? '🔊 Sound' : '🔇 Mute'}
+        </button>
+
+        {/* Chain Container */}
+        <div className="relative h-full flex items-center justify-center w-8 sm:w-10">
+          <div className="absolute top-0 flex flex-col items-center z-10">
+            <div className="w-7 sm:w-8 h-1 bg-slate-500 rounded-b-sm" />
+            <div className="w-6 sm:w-7 h-3.5 bg-slate-700 rounded-b-lg relative flex justify-center items-center shadow-inner">
+              <div
+                className={`w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full -bottom-1 absolute transition-all duration-300 ${
+                  isLightOn
+                    ? 'bg-amber-400 shadow-[0_0_12px_4px_rgba(251,191,36,0.9)]'
+                    : 'bg-slate-600'
+                }`}
+              />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient-x group-hover:scale-105 transition-transform">
-              FYP Marketplace
-            </span>
-            
-            {/* Animated badge */}
-            <span className="absolute -top-1 -right-6 text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-1.5 py-0.5 rounded-full animate-pulse-glow">
-              NEW
-            </span>
-          </Link>
-
-          {/* Student sitting on navbar - Right side */}
-          <StudentSitting />
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-2 z-10">
-            <NavLink to="/" icon="🏠">Home</NavLink>
-            <NavLink to="/projects" icon="📁">Projects</NavLink>
-            <NavLink href="#contact" icon="📞">Contact</NavLink>
-            
-            {/* Dark mode toggle */}
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-110"
-            >
-              {isDarkMode ? 
-                <Sun className="w-5 h-5 text-yellow-500" /> : 
-                <Moon className="w-5 h-5 text-gray-700" />
-              }
-            </button>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center gap-2 md:hidden z-10">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
-            >
-              {isDarkMode ? 
-                <Sun className="w-5 h-5 text-yellow-500" /> : 
-                <Moon className="w-5 h-5 text-gray-700" />
-              }
-            </button>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 relative"
-            >
-              {isMenuOpen ? 
-                <X className="w-6 h-6 text-gray-700 dark:text-gray-300" /> : 
-                <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-              }
-              {/* Notification dot */}
-              {!isMenuOpen && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <div className={`
-          md:hidden overflow-hidden transition-all duration-500 ease-in-out
-          ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
-        `}>
-          <div className="py-4 space-y-3 border-t border-gray-200/20 dark:border-gray-700/20">
-            <MobileNavLink to="/" icon="🏠" onClick={() => setIsMenuOpen(false)}>
-              Home
-            </MobileNavLink>
-            <MobileNavLink to="/projects" icon="📁" onClick={() => setIsMenuOpen(false)}>
-              Projects
-            </MobileNavLink>
-            <MobileNavLink href="#contact" icon="📞" onClick={() => setIsMenuOpen(false)}>
-              Contact
-            </MobileNavLink>
-            
-            {/* Mobile student stats */}
-            <div className="pt-3 mt-3 border-t border-gray-200/20 dark:border-gray-700/20">
-              <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-500" />
-                  500+ students
-                </span>
-                <span className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-yellow-500" />
-                  4.9★ Rating
-                </span>
-                <span className="flex items-center gap-2">
-                  <Rocket className="w-4 h-4 text-blue-500" />
-                  150+ Projects
-                </span>
-              </div>
-            </div>
+          <div
+            className="absolute top-4 cursor-grab active:cursor-grabbing touch-none z-20"
+            style={{ width: '40px', height: '160px' }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            title="Drag down to toggle theme"
+          >
+            <svg className="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffe87c" />
+                  <stop offset="50%" stopColor="#d4af37" />
+                  <stop offset="100%" stopColor="#aa7c11" />
+                </linearGradient>
+              </defs>
+              <g className={!isDragging ? 'animate-chain-dance' : ''}>
+                <line x1="20" y1="0" x2="20" y2={totalLength} stroke="#94a3b8" strokeWidth="1.5" />
+                {beads.map((i) => (
+                  <circle
+                    key={i}
+                    cx="20"
+                    cy={i * beadSpacing}
+                    r="2.8"
+                    fill="url(#goldGradient)"
+                  />
+                ))}
+                <circle
+                  cx="20"
+                  cy={totalLength + 7}
+                  r="8"
+                  fill="none"
+                  stroke="url(#goldGradient)"
+                  strokeWidth="2.5"
+                />
+                <circle cx="20" cy={totalLength + 7} r="2.5" fill="url(#goldGradient)" />
+              </g>
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* Floating Promo with Student Laptop Animation */}
-      <StudentLaptopPromo />
+      {/* Mobile Navigation Drawer */}
+      {isMobileMenuOpen && (
+        <div className={`md:hidden absolute top-16 left-0 w-full border-b shadow-xl py-4 px-6 flex flex-col gap-4 font-medium text-sm transition-all ${
+          isLightOn
+            ? 'bg-white border-slate-200 text-slate-800'
+            : 'bg-[#0f172a] border-slate-800 text-slate-100'
+        }`}>
+          <a href="/" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">Home</a>
+          <a href="#categories" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">Categories</a>
+          <a href="/projects" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">Projects</a>
+          <a href="#payment" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-amber-500 py-1">Payment</a>
+        </div>
+      )}
     </nav>
   );
-}
-
-// Desktop Nav Link Component
-const NavLink = ({ to, href, icon, children }: { to?: string; href?: string; icon: string; children: React.ReactNode }) => {
-  const [, setIsHovered] = useState(false);
-  
-  const commonClasses = `
-    relative px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300
-    transition-all duration-300 hover:scale-105
-    flex items-center gap-2
-    hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20
-  `;
-
-  const content = (
-    <>
-      <span className="text-lg transform transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">
-        {icon}
-      </span>
-      <span className="relative">
-        {children}
-        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full"></span>
-      </span>
-    </>
-  );
-
-  if (to) {
-    return (
-      <Link 
-        to={to} 
-        className={`${commonClasses} group`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <a 
-      href={href} 
-      className={`${commonClasses} group`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {content}
-    </a>
-  );
 };
 
-// Mobile Nav Link Component
-const MobileNavLink = ({ to, href, icon, onClick, children }: { to?: string; href?: string; icon: string; onClick: () => void; children: React.ReactNode }) => {
-  const commonClasses = `
-    flex items-center gap-3 px-4 py-2 rounded-lg
-    text-gray-700 dark:text-gray-300 font-medium
-    hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20
-    transition-all duration-300 hover:scale-105 hover:translate-x-2
-  `;
-
-  if (to) {
-    return (
-      <Link to={to} className={commonClasses} onClick={onClick}>
-        <span className="text-xl">{icon}</span>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
-    <a href={href} className={commonClasses} onClick={onClick}>
-      <span className="text-xl">{icon}</span>
-      {children}
-    </a>
-  );
-};
+export default Navbar;

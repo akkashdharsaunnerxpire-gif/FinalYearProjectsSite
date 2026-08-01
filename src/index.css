@@ -1307,3 +1307,12 @@ footer::-webkit-scrollbar {
   background-size: 200% 200%;
   animation: gradient-shift 4s ease infinite;
 }
+/* Default Mouse Arrow-ஐ மறைக்க */
+body {
+  cursor: none;
+}
+
+/* Buttons, Links-க்கும் Default Arrow வராமல் தடுக்க */
+a, button {
+  cursor: none !important;
+}

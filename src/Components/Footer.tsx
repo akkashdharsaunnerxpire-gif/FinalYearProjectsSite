@@ -14,8 +14,12 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTheme } from '../Context/ThemeContext'; // 🟢 Theme Integration
 
 export default function Footer() {
+  const { theme } = useTheme(); // 🟢 Theme Context Access
+  const isLight = theme === 'light';
+
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -38,7 +42,7 @@ export default function Footer() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Particle system
+  // Theme-aware Particle Canvas System
   useEffect(() => {
     const canvas = particleCanvasRef.current;
     if (!canvas) return;
@@ -79,8 +83,9 @@ export default function Footer() {
       };
     };
 
-    // Initialize particles
-    for (let i = 0; i < 100; i++) {
+    // Initialize particles (Fewer particles on mobile for speed optimization)
+    const particleCount = window.innerWidth < 768 ? 40 : 90;
+    for (let i = 0; i < particleCount; i++) {
       particles.push(createParticle());
     }
 
@@ -89,6 +94,9 @@ export default function Footer() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      // Dynamic Theme Based Colors
+      const particleRgb = isLight ? '99, 102, 241' : '139, 92, 246'; // Indigo in Light, Purple in Dark
+
       // Update and draw particles
       particles.forEach((particle, index) => {
         particle.x += particle.speedX;
@@ -111,8 +119,8 @@ export default function Footer() {
           particle.x, particle.y, 0,
           particle.x, particle.y, particle.size * 3
         );
-        gradient.addColorStop(0, `rgba(139, 92, 246, ${opacity})`);
-        gradient.addColorStop(1, `rgba(139, 92, 246, 0)`);
+        gradient.addColorStop(0, `rgba(${particleRgb}, ${opacity})`);
+        gradient.addColorStop(1, `rgba(${particleRgb}, 0)`);
         
         ctx.fillStyle = gradient;
         ctx.fillRect(
@@ -122,10 +130,10 @@ export default function Footer() {
           particle.size * 6
         );
 
-        // Draw particle
+        // Draw particle core
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(139, 92, 246, ${opacity * 2})`;
+        ctx.fillStyle = `rgba(${particleRgb}, ${opacity * 1.5})`;
         ctx.fill();
       });
 
@@ -136,12 +144,12 @@ export default function Footer() {
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < 100) {
-            const opacity = (1 - distance / 100) * 0.15;
+          if (distance < 90) {
+            const opacity = (1 - distance / 90) * 0.12;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(139, 92, 246, ${opacity})`;
+            ctx.strokeStyle = `rgba(${particleRgb}, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -159,7 +167,7 @@ export default function Footer() {
         cancelAnimationFrame(animationId);
       }
     };
-  }, []);
+  }, [isLight]);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -195,9 +203,9 @@ export default function Footer() {
   ];
 
   const trustBadges = [
-    { Icon: Award, label: '500+ Students', desc: 'Trusted by students worldwide' },
-    { Icon: Shield, label: 'Secure Payment', desc: '100% encrypted transactions' },
-    { Icon: Clock, label: '24/7 Support', desc: 'Always here to help you' },
+    { Icon: Award, label: '500+ Students', desc: 'Trusted worldwide' },
+    { Icon: Shield, label: 'Secure Payment', desc: '100% encrypted' },
+    { Icon: Clock, label: '24/7 Support', desc: 'Always available' },
     { Icon: Heart, label: 'Satisfaction', desc: 'Guaranteed quality' },
   ];
 
@@ -212,99 +220,91 @@ export default function Footer() {
     <footer 
       ref={footerRef}
       id="contact" 
-      className="relative bg-gradient-to-br from-slate-900 via-gray-900 to-black text-gray-300 overflow-hidden"
+      className="relative bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 overflow-hidden transition-colors duration-500 border-t border-slate-200 dark:border-slate-800"
     >
-      {/* Canvas for particle system */}
+      {/* Dynamic Background Particle System */}
       <canvas
         ref={particleCanvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 1 }}
       />
 
-      {/* Animated background gradients */}
+      {/* Background Animated Blurs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        {/* Primary glow */}
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-purple-500/5 via-transparent to-transparent animate-pulse-slow" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-blue-500/5 via-transparent to-transparent animate-pulse-slow animation-delay-1000" />
+        {/* Glow Effects */}
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-purple-500/10 dark:from-purple-500/10 via-transparent to-transparent animate-pulse-slow" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-blue-500/10 dark:from-blue-500/10 via-transparent to-transparent animate-pulse-slow animation-delay-1000" />
 
-        {/* Animated grid */}
-        <div className="absolute inset-0 bg-grid-white/[0.02] [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]" />
-        
-        {/* Floating orbs */}
+        {/* Parallax Orbs */}
         <div 
-          className="absolute top-10 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float-slow"
+          className="absolute top-10 left-10 w-72 h-72 bg-purple-400/10 dark:bg-purple-600/10 rounded-full blur-3xl animate-float-slow"
           style={getParallaxStyle(20)}
         />
         <div 
-          className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float-slow animation-delay-2000"
+          className="absolute bottom-10 right-10 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl animate-float-slow animation-delay-2000"
           style={getParallaxStyle(-15)}
-        />
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-3xl animate-pulse-slow"
         />
       </div>
 
-      {/* Animated gradient line at top */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent animate-gradient-x" style={{ zIndex: 2 }} />
+      {/* Top Gradient Border Accent */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" style={{ zIndex: 2 }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative" style={{ zIndex: 3 }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 relative" style={{ zIndex: 3 }}>
+        
         {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-14">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="group relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/5 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-1"
+              className="group relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 sm:p-6 text-center border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/40 dark:hover:border-purple-500/40 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-gray-400 text-sm">{stat.label}</div>
+              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:to-pink-400 bg-clip-text text-transparent mb-1">
+                {stat.value}
               </div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
-          {/* Brand Section - 4 columns */}
-          <div className="lg:col-span-4 space-y-6">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-14">
+          
+          {/* Brand & Description (4 cols) */}
+          <div className="lg:col-span-4 space-y-5">
             <div className="flex items-center space-x-3">
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-md group-hover:blur-xl transition-all duration-500 animate-pulse-slow" />
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl transform group-hover:scale-110 transition-transform duration-300">
-                  <GraduationCap className="w-6 h-6 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-sm group-hover:blur-md transition-all duration-300" />
+                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-xl text-white">
+                  <GraduationCap className="w-6 h-6" />
                 </div>
               </div>
               <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="text-xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:to-pink-400 bg-clip-text text-transparent tracking-tight">
                   FYP Marketplace
                 </span>
-                <div className="flex items-center gap-1 text-xs text-purple-400">
+                <div className="flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400">
                   <Sparkles className="w-3 h-3" />
                   <span>Premium Projects</span>
                 </div>
               </div>
             </div>
             
-            <p className="text-gray-400 leading-relaxed">
-              Your one-stop destination for high-quality final year projects. 
-              Complete documentation and source code included.
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              Your trusted partner for production-ready final year projects. Complete with verified source code, detailed documentation, and presentation decks.
             </p>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
               {trustBadges.map((badge, index) => (
                 <div 
                   key={index}
-                  className="group relative bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-0.5"
+                  className="group bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm rounded-xl p-2.5 border border-slate-200/60 dark:border-slate-800/60 hover:border-purple-500/40 transition-all duration-300"
                 >
                   <div className="flex items-center gap-2">
-                    <badge.Icon className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                    <badge.Icon className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
                     <div>
-                      <div className="text-xs text-white font-medium">{badge.label}</div>
-                      <div className="text-[10px] text-gray-500">{badge.desc}</div>
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200">{badge.label}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{badge.desc}</div>
                     </div>
                   </div>
                 </div>
@@ -312,179 +312,137 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links - 2 columns */}
+          {/* Quick Links (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-white font-semibold text-lg relative inline-block">
+            <h3 className="text-slate-900 dark:text-white font-bold text-base relative inline-block">
               Quick Links
-              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform" />
+              <span className="block h-0.5 w-8 bg-purple-500 rounded-full mt-1" />
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     to={link.path}
-                    className="group flex items-center gap-3 text-gray-400 hover:text-white transition-all duration-300 text-sm p-2 rounded-lg hover:bg-white/5"
+                    className="group flex items-center gap-2.5 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm py-1.5 px-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                     onMouseEnter={() => setHoveredLink(link.name)}
                     onMouseLeave={() => setHoveredLink(null)}
                   >
-                    <span className="text-lg transform group-hover:scale-110 transition-transform">
-                      {link.icon}
-                    </span>
-                    <span className="flex-1">{link.name}</span>
-                    <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                    <span className="text-base group-hover:scale-110 transition-transform">{link.icon}</span>
+                    <span className="flex-1 font-medium">{link.name}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Categories - 3 columns */}
+          {/* Categories (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
-            <h3 className="text-white font-semibold text-lg relative inline-block">
+            <h3 className="text-slate-900 dark:text-white font-bold text-base relative inline-block">
               Categories
-              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform" />
+              <span className="block h-0.5 w-8 bg-pink-500 rounded-full mt-1" />
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               {categories.map((category, index) => (
                 <li key={index}>
                   <Link
                     to={category.path}
-                    className="group flex items-center gap-3 text-gray-400 hover:text-white transition-all duration-300 text-sm p-2 rounded-lg hover:bg-white/5"
+                    className="group flex items-center gap-2.5 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm py-1.5 px-2 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                   >
-                    <span className="text-lg transform group-hover:scale-110 transition-transform">
-                      {category.icon}
-                    </span>
-                    <span className="flex-1">{category.name}</span>
-                    <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${category.color} opacity-0 group-hover:opacity-100 transition-all group-hover:scale-150`} />
+                    <span className="text-base group-hover:scale-110 transition-transform">{category.icon}</span>
+                    <span className="flex-1 font-medium">{category.name}</span>
+                    <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${category.color} opacity-0 group-hover:opacity-100 transition-all`} />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact & Newsletter - 3 columns */}
+          {/* Contact & Newsletter (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
-            <h3 className="text-white font-semibold text-lg relative inline-block">
+            <h3 className="text-slate-900 dark:text-white font-bold text-base relative inline-block">
               Stay Connected
-              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform" />
+              <span className="block h-0.5 w-8 bg-blue-500 rounded-full mt-1" />
             </h3>
             
-            {/* Contact Info */}
-            <ul className="space-y-2">
-              <li className="flex items-start gap-3 group p-2 rounded-lg hover:bg-white/5 transition-all duration-300">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
-                  <Mail className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+            {/* Contact Details */}
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
+                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <Mail className="w-4 h-4" />
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500">Email</div>
-                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                    akkashdharsaun02@gmail.com
-                  </span>
-                </div>
+                <span className="truncate">akkashdharsaun02@gmail.com</span>
               </li>
-              <li className="flex items-start gap-3 group p-2 rounded-lg hover:bg-white/5 transition-all duration-300">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
-                  <Phone className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+              <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <Phone className="w-4 h-4" />
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500">Phone</div>
-                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                    +91 8015874936
-                  </span>
-                </div>
+                <span>+91 8015874936</span>
               </li>
-              <li className="flex items-start gap-3 group p-2 rounded-lg hover:bg-white/5 transition-all duration-300">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
-                  <MapPin className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+              <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
+                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400">
+                  <MapPin className="w-4 h-4" />
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500">Location</div>
-                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                    India, Tamil Nadu
-                  </span>
-                </div>
+                <span>India, Tamil Nadu</span>
               </li>
             </ul>
 
-            {/* Newsletter */}
-            <form onSubmit={handleSubmit} className="mt-2">
-              <div className="relative group">
+            {/* Newsletter Input */}
+            <form onSubmit={handleSubmit} className="pt-2">
+              <div className="relative">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 pr-14 group-hover:border-white/20"
+                  placeholder="Enter email updates"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all pr-12"
                   required
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white hover:scale-110 transition-all duration-300 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40"
+                  aria-label="Subscribe"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white hover:scale-105 active:scale-95 transition-all shadow-md shadow-purple-500/20"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
               {isSubmitted && (
-                <p className="text-green-400 text-xs mt-2 animate-slide-up">
+                <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1.5 font-semibold">
                   ✓ Subscribed successfully!
                 </p>
               )}
             </form>
           </div>
+
         </div>
 
         {/* Bottom Bar */}
-        <div className="relative pt-8">
-          {/* Animated separator */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-          
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm flex items-center gap-2">
-              © 2024 FYP Marketplace.
-              <span className="hidden sm:inline">All rights reserved.</span>
-              <span className="flex items-center gap-1 text-gray-600">
-                Made with <Heart className="w-3.5 h-3.5 text-red-500 animate-pulse" /> in India
-              </span>
+        <div className="pt-8 border-t border-slate-200/80 dark:border-slate-800/80 relative">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+            <p className="flex items-center gap-1.5">
+              © 2026 FYP Marketplace.
+              <span>Made with</span>
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 animate-pulse" />
+              <span>in India</span>
             </p>
             
-            <div className="flex flex-wrap gap-4 md:gap-6">
-              {['Privacy Policy', 'Terms of Service', 'Refund Policy'].map((item, index) => (
-                <a
-                  key={index}
-                  href="#"
-                  className="group relative text-gray-500 hover:text-purple-400 transition-all duration-300 text-sm"
-                >
-                  <span>{item}</span>
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-purple-400 group-hover:w-full transition-all duration-300" />
-                </a>
-              ))}
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Refund Policy</a>
             </div>
           </div>
 
-          {/* Scroll to top button */}
+          {/* Back To Top Button */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="absolute -top-6 right-0 group p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white hover:scale-110 transition-all duration-300 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
+            aria-label="Scroll to top"
+            className="absolute -top-5 right-2 sm:right-0 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-slate-700 dark:text-slate-200 hover:text-purple-600 dark:hover:text-purple-400 shadow-md hover:scale-110 active:scale-95 transition-all"
           >
-            <ChevronUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+            <ChevronUp className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Animated floating particles at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <div className="flex justify-around opacity-10">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="w-1 h-1 bg-purple-500 rounded-full animate-float"
-                style={{
-                  animationDelay: `${i * 0.4}s`,
-                  animationDuration: `${3 + i * 0.5}s`,
-                }}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </footer>
   );
