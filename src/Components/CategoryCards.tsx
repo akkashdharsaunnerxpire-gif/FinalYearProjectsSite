@@ -248,7 +248,7 @@ export default function CategoryCards() {
           {categories.map((category, index) => {
             const Icon = iconMap[category.icon] || Code;
             const color = categoryColors[index % categoryColors.length];
-            const [tiltRef, tilt, isHovered] = useTiltEffect();
+            const [tiltRef, tilt] = useTiltEffect();
             const isActive = index === activeIndex;
 
             return (
